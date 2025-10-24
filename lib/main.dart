@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get.dart';
+import 'package:legate_my_car/intro_view.dart';
 import 'theme/app_theme.dart';
-import 'views/car_list_view.dart';
 import 'translations/app_translations.dart';
 import 'controllers/language_controller.dart';
 import 'dart:ui' as ui;
@@ -42,7 +42,7 @@ class MyApp extends StatelessWidget {
           child: child!,
         );
       },
-      home: const CarListView(),
+      home: const IntroView(),
     );
   }
 }
