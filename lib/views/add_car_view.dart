@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../theme/app_theme.dart';
+import 'location_picker_view.dart';
 
 class AddCarView extends StatefulWidget {
   const AddCarView({super.key});
@@ -25,6 +26,9 @@ class _AddCarViewState extends State<AddCarView> {
   bool _isLoading = false;
   File? _selectedImage;
   final ImagePicker _picker = ImagePicker();
+  double? _selectedLatitude;
+  double? _selectedLongitude;
+  String? _selectedAddress;
 
   @override
   void dispose() {
@@ -123,12 +127,7 @@ class _AddCarViewState extends State<AddCarView> {
                       ),
                       const SizedBox(height: 16),
 
-                      _buildTextField(
-                        controller: _locationController,
-                        label: 'LOCATION'.tr,
-                        hint: 'مثال: الخرطوم, الخرطوم الشرقية, الخرطوم الغربية',
-                        required: true,
-                      ),
+                      _buildLocationField(),
                     ],
                   ),
                 ),
@@ -260,6 +259,68 @@ class _AddCarViewState extends State<AddCarView> {
               return null;
             }
           : null,
+    );
+  }
+
+  Widget _buildLocationField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'LOCATION'.tr + ' *',
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: AppTheme.textPrimaryColor,
+          ),
+        ),
+        const SizedBox(height: 8),
+        InkWell(
+          onTap: () async {
+            final result = await Get.to(
+              () => LocationPickerView(
+                initialLatitude: _selectedLatitude,
+                initialLongitude: _selectedLongitude,
+              ),
+            );
+
+            if (result != null) {
+              setState(() {
+                _selectedLatitude = result['latitude'];
+                _selectedLongitude = result['longitude'];
+                _selectedAddress = result['address'];
+                _locationController.text = _selectedAddress ?? '';
+              });
+            }
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppTheme.primaryColor),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    _locationController.text.isEmpty
+                        ? 'Tap to pick location'
+                        : _locationController.text,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: _locationController.text.isEmpty
+                          ? Colors.grey.shade600
+                          : Colors.black,
+                    ),
+                  ),
+                ),
+                const Icon(Icons.location_on, color: AppTheme.primaryColor),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 
