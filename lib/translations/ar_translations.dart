@@ -14,7 +14,7 @@ class ArTranslations {
 
     // Car List
     'LOST_CARS_TITLE': 'السيارات المفقودة في السودان',
-    'SEARCH_HINT': 'ابحث بالرقم، الماركة، الطراز، اللون، أو الموقع...',
+    'SEARCH_HINT': 'ابحث بآخر 5 أرقام من الشاسي',
     'NO_CARS_FOUND': 'لم يتم العثور على سيارات تطابق بحثك',
     'NO_CARS_AVAILABLE': 'لا توجد سيارات متاحة',
     'TRY_ADJUSTING_SEARCH': 'حاول تعديل مصطلحات البحث',
@@ -66,6 +66,9 @@ class ArTranslations {
     'UNKNOWN_ERROR': 'حدث خطأ غير معروف.',
     'FAILED_TO_LOAD_CARS': 'فشل في تحميل السيارات',
     'FAILED_TO_SEARCH_CARS': 'فشل في البحث عن السيارات',
+    'NO_INTERNET_CONNECTION':
+        'لا يوجد اتصال بالإنترنت. يرجى التحقق من اتصالك والمحاولة مرة أخرى.',
+    'TRY_AGAIN': 'إعادة المحاولة',
 
     // Success Messages
     'DATA_LOADED': 'تم تحميل البيانات بنجاح',
@@ -131,5 +134,11 @@ class ArTranslations {
     'GALLERY_ICON': 'المعرض',
     'VOLUNTEER_ICON': 'متطوع',
     'MATCH_ICON': 'تطابق',
+
+    // Menu Items
+    'MY_ACCOUNT': 'حسابي',
+    'MY_REQUEST': 'طلباتي',
+    'UPLOAD_CAR': 'رفع سيارة',
+    'ABOUT_APP': 'حول التطبيق',
   };
 }

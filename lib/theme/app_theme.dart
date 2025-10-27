@@ -4,7 +4,7 @@ import '../controllers/language_controller.dart';
 
 class AppTheme {
   // Sudan Flag Colors
-  static const Color sudanRed = Color(0xFFDC143C); // Determination and rescue
+  static const Color sudanRed = Color(0xFFCC362A); // Determination and rescue
   static const Color sudanBlack = Color(0xFF000000); // Resilience
   static const Color sudanWhite = Color(0xFFFFFFFF); // Purity and transparency
   static const Color sudanGreen = Color(0xFF228B22); // Hope and life
@@ -45,7 +45,7 @@ class AppTheme {
       onSurface: textPrimaryColor,
       onError: Colors.white,
     ),
-    appBarTheme: const AppBarTheme(
+    appBarTheme: AppBarTheme(
       backgroundColor: primaryColor,
       foregroundColor: Colors.white,
       elevation: 2,
@@ -53,7 +53,8 @@ class AppTheme {
       titleTextStyle: TextStyle(
         color: Colors.white,
         fontSize: 20,
-        fontWeight: FontWeight.w600,
+        fontWeight: FontWeight.bold,
+        fontFamily: fontFamily,
       ),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(

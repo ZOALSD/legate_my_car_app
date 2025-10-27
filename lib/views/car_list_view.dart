@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:legate_my_car/views/add_car_view.dart';
 import 'package:legate_my_car/views/car_single_view.dart';
 import 'package:legate_my_car/views/search_Widget.dart';
 import '../viewmodels/car_viewmodel.dart';
@@ -64,7 +65,7 @@ class _CarListViewState extends State<CarListView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.grey.shade200,
       body: SafeArea(
         child: Column(
           children: [
@@ -74,9 +75,7 @@ class _CarListViewState extends State<CarListView> {
             Expanded(
               child: Obx(
                 () => viewModel.isLoading && viewModel.cars.isEmpty
-                    ? Center(
-                        child: CircularProgressIndicator(color: Colors.white),
-                      )
+                    ? const Center(child: CircularProgressIndicator())
                     : viewModel.cars.isEmpty
                     ? Center(
                         child: Text(
@@ -89,7 +88,7 @@ class _CarListViewState extends State<CarListView> {
                           await viewModel.refresh();
                         },
                         color: Colors.white,
-                        backgroundColor: Colors.grey[800],
+                        // backgroundColor: Colors.grey[800],
                         child: SingleChildScrollView(
                           controller: _scrollController,
                           padding: EdgeInsets.symmetric(horizontal: 16),
@@ -114,13 +113,13 @@ class _CarListViewState extends State<CarListView> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Color(0xFF009A49),
-        child: Icon(Icons.add, color: Colors.white),
-        onPressed: () {
-          // Navigate to add car screen
-        },
-      ),
+      // floatingActionButton: FloatingActionButton(
+      //   backgroundColor: Color(0xFF009A49),
+      //   child: Icon(Icons.add, color: Colors.white),
+      //   onPressed: () {
+      //     // Navigate to add car screen
+      //   },
+      // ),
     );
   }
 
@@ -139,15 +138,77 @@ class _CarListViewState extends State<CarListView> {
               SvgPicture.asset('assets/images/logo.svg', width: 40, height: 40),
               Text(
                 "APP_TITLE".tr,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  // color: Colors.white,
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
+                  fontFamily: 'Tajawal',
                 ),
               ),
             ],
           ),
-          const Icon(Icons.more_vert, color: Colors.white),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert),
+            onSelected: (String value) {
+              // Handle menu item selection
+              switch (value) {
+                case 'my_account':
+                  // Navigate to my account page
+                  break;
+                case 'my_request':
+                  // Navigate to my request page
+                  break;
+                case 'upload_car':
+                  Get.to(() => AddCarView());
+                  break;
+                case 'about_app':
+                  // Show about app dialog
+                  break;
+              }
+            },
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+              PopupMenuItem<String>(
+                value: 'my_account',
+                child: Row(
+                  children: [
+                    const Icon(Icons.person, color: Colors.grey),
+                    const SizedBox(width: 10),
+                    Text('MY_ACCOUNT'.tr),
+                  ],
+                ),
+              ),
+              PopupMenuItem<String>(
+                value: 'my_request',
+                child: Row(
+                  children: [
+                    const Icon(Icons.request_page, color: Colors.grey),
+                    const SizedBox(width: 10),
+                    Text('MY_REQUEST'.tr),
+                  ],
+                ),
+              ),
+              PopupMenuItem<String>(
+                value: 'upload_car',
+                child: Row(
+                  children: [
+                    const Icon(Icons.add_circle, color: Colors.grey),
+                    const SizedBox(width: 10),
+                    Text('UPLOAD_CAR'.tr),
+                  ],
+                ),
+              ),
+              PopupMenuItem<String>(
+                value: 'about_app',
+                child: Row(
+                  children: [
+                    const Icon(Icons.info, color: Colors.grey),
+                    const SizedBox(width: 10),
+                    Text('ABOUT_APP'.tr),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );
@@ -178,9 +239,7 @@ class _CarListViewState extends State<CarListView> {
         if (viewModel.isLoading && viewModel.cars.isNotEmpty)
           Container(
             padding: EdgeInsets.all(20),
-            child: Center(
-              child: CircularProgressIndicator(color: Colors.white),
-            ),
+            child: const Center(child: CircularProgressIndicator()),
           ),
 
         // End of list indicator
@@ -210,7 +269,7 @@ class _CarListViewState extends State<CarListView> {
       },
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.grey[900],
+          color: Colors.white,
           borderRadius: BorderRadius.circular(_AppConstants.cardBorderRadius),
         ),
         child: Column(
@@ -218,7 +277,7 @@ class _CarListViewState extends State<CarListView> {
           children: [
             // Car Image
             Expanded(
-              flex: 3,
+              flex: 4,
               child: Stack(
                 children: [
                   ClipRRect(
@@ -226,15 +285,13 @@ class _CarListViewState extends State<CarListView> {
                       top: Radius.circular(12),
                     ),
                     child: CachedNetworkImage(
-                      imageUrl: vehicle.imagePath ?? '',
+                      imageUrl: vehicle.fullImageUrl ?? '',
                       width: double.infinity,
                       height: double.infinity,
                       fit: BoxFit.cover,
                       placeholder: (context, url) => Container(
                         color: Colors.grey[800],
-                        child: Center(
-                          child: CircularProgressIndicator(color: Colors.white),
-                        ),
+                        child: const Center(child: CircularProgressIndicator()),
                       ),
                       errorWidget: (context, url, error) => Container(
                         color: Colors.grey[800],
@@ -246,30 +303,6 @@ class _CarListViewState extends State<CarListView> {
                       ),
                     ),
                   ),
-                  // New badge
-                  if (index == 1 || index == 3)
-                    Positioned(
-                      top: 8,
-                      right: 8,
-                      child: Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.red,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          'New',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
                 ],
               ),
             ),
@@ -282,57 +315,14 @@ class _CarListViewState extends State<CarListView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Flag and Brand
-                    Row(
-                      children: [
-                        Container(
-                          width: 16,
-                          height: 12,
-                          decoration: BoxDecoration(
-                            color: Colors.red,
-                            borderRadius: BorderRadius.circular(2),
-                          ),
-                          child: Center(
-                            child: Container(
-                              width: 4,
-                              height: 4,
-                              decoration: BoxDecoration(
-                                color: Colors.green,
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            vehicle.brand,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 4),
                     Text(
-                      vehicle.model,
-                      style: TextStyle(color: Colors.grey[400], fontSize: 11),
-                      overflow: TextOverflow.ellipsis,
+                      vehicle.chassisNumber,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                    SizedBox(height: 2),
-                    Text(
-                      'Make a model',
-                      style: TextStyle(color: Colors.grey[500], fontSize: 10),
-                    ),
-                    Spacer(),
-                    Text(
-                      '2021',
-                      style: TextStyle(color: Colors.grey[400], fontSize: 10),
-                    ),
+                    Text("${vehicle.brand ?? ""} - ${vehicle.model ?? ""}"),
                   ],
                 ),
               ),

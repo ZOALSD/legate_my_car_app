@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import '../models/car_model.dart';
 import '../services/api_service.dart';
@@ -38,7 +39,11 @@ class CarViewModel extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    loadCars();
+    _initializeApp();
+  }
+
+  Future<void> _initializeApp() async {
+    await loadCars();
   }
 
   // Load all cars
@@ -66,12 +71,14 @@ class CarViewModel extends GetxController {
       _totalCars.value = response.pagination.total;
       _hasMorePages.value = response.pagination.hasMorePages;
     } catch (e) {
+      debugPrint('Error loading cars: $e');
       _errorMessage.value = e.toString();
-      Get.snackbar(
-        'Error',
-        'Failed to load cars: ${e.toString()}',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      _cars.value = [];
+      _filteredCars.value = [];
+      _currentPage.value = 1;
+      _totalPages.value = 1;
+      _totalCars.value = 0;
+      _hasMorePages.value = false;
     } finally {
       _isLoading.value = false;
     }
@@ -133,15 +140,6 @@ class CarViewModel extends GetxController {
     final counts = <String, int>{};
     for (final car in _cars) {
       counts[car.status] = (counts[car.status] ?? 0) + 1;
-    }
-    return counts;
-  }
-
-  // Get brand counts
-  Map<String, int> getBrandCounts() {
-    final counts = <String, int>{};
-    for (final car in _cars) {
-      counts[car.brand] = (counts[car.brand] ?? 0) + 1;
     }
     return counts;
   }

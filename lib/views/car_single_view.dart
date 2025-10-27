@@ -13,7 +13,7 @@ class CarSingleView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.grey.shade200,
       body: CustomScrollView(
         slivers: [
           _buildAppBar(context),
@@ -22,11 +22,7 @@ class CarSingleView extends StatelessWidget {
               children: [
                 _buildCarImage(),
                 _buildCarDetails(),
-                _buildStatusSection(),
-                _buildLocationSection(),
                 _buildContactSection(),
-                _buildDescriptionSection(),
-                _buildTimelineSection(),
                 const SizedBox(height: 100), // Bottom padding for FAB
               ],
             ),
@@ -42,18 +38,18 @@ class CarSingleView extends StatelessWidget {
       expandedHeight: 0,
       floating: true,
       pinned: true,
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.grey.shade200,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back, color: Colors.white),
+        icon: const Icon(Icons.arrow_back, color: Colors.black),
         onPressed: () => Navigator.of(context).pop(),
       ),
       actions: [
         IconButton(
-          icon: const Icon(Icons.share, color: Colors.white),
+          icon: const Icon(Icons.share, color: Colors.black),
           onPressed: () => _shareCar(),
         ),
         IconButton(
-          icon: const Icon(Icons.more_vert, color: Colors.white),
+          icon: const Icon(Icons.more_vert, color: Colors.black),
           onPressed: () => _showMoreOptions(context),
         ),
       ],
@@ -61,24 +57,24 @@ class CarSingleView extends StatelessWidget {
   }
 
   Widget _buildCarImage() {
-    return Container(
+    return SizedBox(
       height: 300,
       width: double.infinity,
       child: Stack(
         children: [
           CachedNetworkImage(
-            imageUrl: car.imagePath ?? '',
+            imageUrl: car.fullImageUrl ?? '',
             width: double.infinity,
             height: double.infinity,
             fit: BoxFit.cover,
             placeholder: (context, url) => Container(
-              color: Colors.grey[800],
+              color: Colors.white,
               child: const Center(
                 child: CircularProgressIndicator(color: Colors.white),
               ),
             ),
             errorWidget: (context, url, error) => Container(
-              color: Colors.grey[800],
+              color: Colors.white,
               child: const Center(
                 child: Icon(Icons.car_rental, color: Colors.grey, size: 80),
               ),
@@ -90,55 +86,15 @@ class CarSingleView extends StatelessWidget {
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [Colors.transparent, Colors.black.withOpacity(0.7)],
+                colors: [
+                  Colors.transparent,
+                  Colors.black.withValues(alpha: 0.7),
+                ],
               ),
             ),
           ),
           // Status badge
-          Positioned(top: 16, right: 16, child: _buildStatusBadge()),
         ],
-      ),
-    );
-  }
-
-  Widget _buildStatusBadge() {
-    Color badgeColor;
-    String statusText;
-
-    switch (car.status.toLowerCase()) {
-      case 'found':
-        badgeColor = AppTheme.secondaryColor;
-        statusText = 'FOUND';
-        break;
-      case 'lost':
-        badgeColor = AppTheme.primaryColor;
-        statusText = 'LOST';
-        break;
-      default:
-        badgeColor = Colors.orange;
-        statusText = car.status.toUpperCase();
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: badgeColor,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.3),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Text(
-        statusText,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-        ),
       ),
     );
   }
@@ -148,7 +104,7 @@ class CarSingleView extends StatelessWidget {
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.grey[900],
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -157,21 +113,12 @@ class CarSingleView extends StatelessWidget {
           // Car name and brand
           Row(
             children: [
-              SvgPicture.asset(
-                'assets/images/logo.svg',
-                width: 24,
-                height: 24,
-                colorFilter: const ColorFilter.mode(
-                  AppTheme.primaryColor,
-                  BlendMode.srcIn,
-                ),
-              ),
+              SvgPicture.asset('assets/images/logo.svg', width: 24, height: 24),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   car.fullCarName,
                   style: const TextStyle(
-                    color: Colors.white,
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                   ),
@@ -192,7 +139,6 @@ class CarSingleView extends StatelessWidget {
             car.chassisNumber,
             Icons.fingerprint,
           ),
-          _buildDetailRow('Color', car.color, Icons.palette),
           _buildDetailRow('Model Year', '2021', Icons.calendar_today),
         ],
       ),
@@ -203,8 +149,9 @@ class CarSingleView extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: Colors.grey[400], size: 20),
+          Icon(icon, size: 20),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -212,13 +159,8 @@ class CarSingleView extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  style: TextStyle(
-                    color: Colors.grey[400],
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
                 ),
-                const SizedBox(height: 2),
                 Text(
                   value,
                   style: const TextStyle(
@@ -229,113 +171,6 @@ class CarSingleView extends StatelessWidget {
                 ),
               ],
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatusSection() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.grey[900],
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Status Information',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Icon(
-                car.status.toLowerCase() == 'found'
-                    ? Icons.check_circle
-                    : Icons.warning,
-                color: car.status.toLowerCase() == 'found'
-                    ? AppTheme.secondaryColor
-                    : AppTheme.primaryColor,
-                size: 24,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      car.status.toUpperCase(),
-                      style: TextStyle(
-                        color: car.status.toLowerCase() == 'found'
-                            ? AppTheme.secondaryColor
-                            : AppTheme.primaryColor,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      car.status.toLowerCase() == 'found'
-                          ? 'This car has been found and returned'
-                          : 'This car is currently missing',
-                      style: TextStyle(color: Colors.grey[400], fontSize: 14),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLocationSection() {
-    return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.grey[900],
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Location',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              const Icon(
-                Icons.location_on,
-                color: AppTheme.primaryColor,
-                size: 24,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  car.location,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
           ),
         ],
       ),
@@ -391,118 +226,6 @@ class CarSingleView extends StatelessWidget {
     );
   }
 
-  Widget _buildDescriptionSection() {
-    if (car.description.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.grey[900],
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Description',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            car.description,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              height: 1.5,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTimelineSection() {
-    return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.grey[900],
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Timeline',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 16),
-          _buildTimelineItem(
-            'Lost Date',
-            car.formattedLostDate,
-            Icons.warning,
-            AppTheme.primaryColor,
-          ),
-          const SizedBox(height: 12),
-          _buildTimelineItem(
-            'Reported Date',
-            car.formattedCreatedDate,
-            Icons.report,
-            AppTheme.secondaryColor,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTimelineItem(
-    String title,
-    String date,
-    IconData icon,
-    Color color,
-  ) {
-    return Row(
-      children: [
-        Icon(icon, color: color, size: 20),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: TextStyle(
-                  color: Colors.grey[400],
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              Text(
-                date,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildFloatingActionButton() {
     return FloatingActionButton.extended(
       onPressed: () => _showContactOptions(),
@@ -521,7 +244,7 @@ class CarSingleView extends StatelessWidget {
       'Share',
       'Share functionality will be implemented',
       snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.grey[800],
+      backgroundColor: Colors.white,
       colorText: Colors.white,
     );
   }
@@ -577,7 +300,7 @@ class CarSingleView extends StatelessWidget {
       'Call',
       'Calling $phoneNumber',
       snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.grey[800],
+      backgroundColor: Colors.white,
       colorText: Colors.white,
     );
   }
@@ -587,7 +310,7 @@ class CarSingleView extends StatelessWidget {
       'Contact',
       'Contact options will be implemented',
       snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.grey[800],
+      backgroundColor: Colors.white,
       colorText: Colors.white,
     );
   }
@@ -597,7 +320,7 @@ class CarSingleView extends StatelessWidget {
       'Report',
       'Report functionality will be implemented',
       snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.grey[800],
+      backgroundColor: Colors.white,
       colorText: Colors.white,
     );
   }
@@ -607,7 +330,7 @@ class CarSingleView extends StatelessWidget {
       'Save',
       'Car saved to favorites',
       snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.grey[800],
+      backgroundColor: Colors.white,
       colorText: Colors.white,
     );
   }

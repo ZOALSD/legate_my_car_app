@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get_utils/get_utils.dart';
 import 'package:legate_my_car/views/car_list_view.dart';
+import '../services/auth_service.dart';
+import '../utils/connection_helper.dart';
 
 class IntroView extends StatefulWidget {
   const IntroView({super.key});
@@ -11,21 +13,53 @@ class IntroView extends StatefulWidget {
 }
 
 class _IntroViewState extends State<IntroView> {
+  bool isLoading = true;
+  bool isAuthenticated = false;
+  bool hasInternet = true;
+
   @override
   void initState() {
     super.initState();
-    redirectToCarListView();
+    _initializeApp();
   }
 
-  void redirectToCarListView() {
-    Future.delayed(const Duration(seconds: 5), () {
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => CarListView()),
-        );
+  Future<void> _initializeApp() async {
+    try {
+      hasInternet = await ConnectionHelper.hasInternet();
+      if (hasInternet) {
+        final hasToken = await AuthService.isAuthenticated();
+
+        if (hasToken) {
+          isAuthenticated = true;
+        } else {
+          final loginSuccess = await AuthService.loginAsGuest();
+          if (loginSuccess) {
+            isAuthenticated = true;
+          }
+        }
+      } else {
+        setState(() {
+          isLoading = false;
+          hasInternet = false;
+        });
       }
-    });
+
+      if (isAuthenticated && mounted) {
+        _redirectToCarListView();
+      }
+    } catch (e) {
+      await Future.delayed(const Duration(seconds: 1));
+      _redirectToCarListView();
+    }
+  }
+
+  void _redirectToCarListView() {
+    if (mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const CarListView()),
+      );
+    }
   }
 
   @override
@@ -43,10 +77,41 @@ class _IntroViewState extends State<IntroView> {
               style: TextStyle(fontSize: 45, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
-            const CircularProgressIndicator(),
+            _loadingIndicatorOrNoInternetMessage(),
+            const SizedBox(height: 20),
           ],
         ),
       ),
     );
+  }
+
+  Widget _loadingIndicatorOrNoInternetMessage() {
+    if (isLoading) {
+      return const CircularProgressIndicator();
+    } else if (!hasInternet) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 30),
+          child: Column(
+            children: [
+              Text(
+                "NO_INTERNET_CONNECTION".tr,
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                textAlign: TextAlign.center,
+                textDirection: TextDirection.rtl,
+              ),
+              const SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: () {
+                  _initializeApp();
+                },
+                child: Text("TRY_AGAIN".tr),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    return const SizedBox.shrink();
   }
 }
