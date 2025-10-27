@@ -1,3 +1,4 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -29,9 +30,11 @@ class _LocationPickerViewState extends State<LocationPickerView> {
       receiveTimeout: const Duration(seconds: 5),
     ),
   );
-  LatLng _selectedLocation = const LatLng(15.4542, 32.5322); // Khartoum default
+  final CancelToken _cancelToken = CancelToken();
+  LatLng _selectedLocation = const LatLng(15.4542, 32.5322);
   String _address = '';
   bool _hasNetworkError = false;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -48,45 +51,123 @@ class _LocationPickerViewState extends State<LocationPickerView> {
   @override
   void dispose() {
     _mapController.dispose();
+    _cancelToken.cancel();
     _dio.close();
     super.dispose();
   }
 
+  Future<bool> _checkConnectivity() async {
+    final result = await Connectivity().checkConnectivity();
+    return result != ConnectivityResult.none;
+  }
+
   Future<void> _getCurrentLocation() async {
+    if (!mounted) return;
+    setState(() {
+      _isLoading = true;
+    });
+
     try {
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
       }
-      if (permission == LocationPermission.denied ||
-          permission == LocationPermission.deniedForever) {
+      if (permission == LocationPermission.denied) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Location permission denied'.tr),
+              action: SnackBarAction(
+                label: 'Settings'.tr,
+                onPressed: () => Geolocator.openAppSettings(),
+              ),
+            ),
+          );
+        }
+        setState(() {
+          _isLoading = false;
+        });
         return;
       }
+      if (permission == LocationPermission.deniedForever) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Location permission permanently denied'.tr),
+              action: SnackBarAction(
+                label: 'Settings'.tr,
+                onPressed: () => Geolocator.openAppSettings(),
+              ),
+            ),
+          );
+        }
+        setState(() {
+          _isLoading = false;
+        });
+        return;
+      }
+
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Location services are disabled'.tr),
+              action: SnackBarAction(
+                label: 'Settings'.tr,
+                onPressed: () => Geolocator.openLocationSettings(),
+              ),
+            ),
+          );
+        }
+        setState(() {
+          _isLoading = false;
+        });
+        return;
+      }
+
       Position position = await Geolocator.getCurrentPosition();
+      if (!mounted) return;
       setState(() {
         _selectedLocation = LatLng(position.latitude, position.longitude);
+        _isLoading = false;
       });
       _mapController.move(_selectedLocation, 15);
-      _updateAddress(position.latitude, position.longitude);
+      await _updateAddress(position.latitude, position.longitude);
     } catch (e) {
       if (mounted) {
         setState(() {
           _address =
               'Location: ${_selectedLocation.latitude.toStringAsFixed(6)}, ${_selectedLocation.longitude.toStringAsFixed(6)}';
+          _isLoading = false;
         });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to get current location'.tr)),
+        );
       }
     }
   }
 
   Future<void> _updateAddress(double lat, double lon) async {
-    // Set coordinates as fallback immediately
     final coordinateString =
         '${lat.toStringAsFixed(6)}, ${lon.toStringAsFixed(6)}';
+    if (!mounted) return;
+    setState(() {
+      _address = 'Location: $coordinateString';
+      _isLoading = true;
+    });
 
-    if (mounted) {
-      setState(() {
-        _address = 'Location: $coordinateString';
-      });
+    if (!await _checkConnectivity()) {
+      if (mounted) {
+        setState(() {
+          _hasNetworkError = true;
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('No internet connection'.tr)));
+      }
+      return;
     }
 
     try {
@@ -99,22 +180,28 @@ class _LocationPickerViewState extends State<LocationPickerView> {
           'zoom': 18,
           'addressdetails': 1,
         },
+        cancelToken: _cancelToken,
       );
 
-      if (response.statusCode == 200 && response.data != null) {
-        final data = response.data;
-        if (mounted && data['display_name'] != null) {
+      if (response.statusCode == 200 && response.data['display_name'] != null) {
+        if (mounted) {
           setState(() {
-            _address = data['display_name'];
+            _address = response.data['display_name'];
+            _hasNetworkError = false;
+            _isLoading = false;
           });
         }
       }
     } catch (e) {
-      // Keep the coordinate fallback that was already set
       if (mounted) {
         setState(() {
           _address = 'Location: $coordinateString';
+          _hasNetworkError = true;
+          _isLoading = false;
         });
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to fetch address'.tr)));
       }
     }
   }
@@ -139,90 +226,142 @@ class _LocationPickerViewState extends State<LocationPickerView> {
       body: Column(
         children: [
           Expanded(
-            child: _hasNetworkError
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(
-                          Icons.wifi_off,
-                          size: 64,
-                          color: Colors.grey,
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'No Internet Connection',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 32),
-                          child: Text(
-                            'Please check your internet connection to load the map',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(color: Colors.grey[600]),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        ElevatedButton(
-                          onPressed: () {
-                            setState(() {
-                              _hasNetworkError = false;
-                            });
-                          },
-                          child: const Text('Retry'),
-                        ),
-                      ],
-                    ),
-                  )
-                : FlutterMap(
-                    mapController: _mapController,
-                    options: MapOptions(
-                      center: _selectedLocation,
-                      zoom: 15,
-                      minZoom: 5,
-                      maxZoom: 18,
-                      onTap: (tapPosition, point) {
-                        setState(() {
-                          _selectedLocation = point;
-                        });
-                        _updateAddress(point.latitude, point.longitude);
-                      },
-                      onMapReady: () {
-                        // Handle map ready
-                      },
-                    ),
-                    children: [
-                      TileLayer(
-                        urlTemplate:
-                            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                        errorTileCallback: (tile, error, __) {
-                          // Handle tile loading errors
-                          if (!mounted) return;
-                          setState(() {
-                            _hasNetworkError = true;
-                          });
-                        },
-                      ),
-                      MarkerLayer(
-                        markers: [
-                          Marker(
-                            point: _selectedLocation,
-                            width: 50,
-                            height: 50,
-                            child: const Icon(
-                              Icons.location_on,
-                              color: Colors.red,
-                              size: 50,
+            child: Stack(
+              children: [
+                _hasNetworkError
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.wifi_off,
+                              size: 64,
+                              color: Colors.grey,
                             ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'No Internet Connection'.tr,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 32,
+                              ),
+                              child: Text(
+                                'Please check your internet connection to load the map'
+                                    .tr,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(color: Colors.grey[600]),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            ElevatedButton(
+                              onPressed: () async {
+                                if (await _checkConnectivity()) {
+                                  setState(() {
+                                    _hasNetworkError = false;
+                                  });
+                                  await _getCurrentLocation();
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Still no connection'.tr),
+                                    ),
+                                  );
+                                }
+                              },
+                              child: Text('Retry'.tr),
+                            ),
+                          ],
+                        ),
+                      )
+                    : FlutterMap(
+                        mapController: _mapController,
+                        options: MapOptions(
+                          center: _selectedLocation,
+                          zoom: 15,
+                          minZoom: 5,
+                          maxZoom: 18,
+                          onTap: (tapPosition, point) {
+                            setState(() {
+                              _selectedLocation = point;
+                            });
+                            _updateAddress(point.latitude, point.longitude);
+                          },
+                          onMapReady: () {
+                            // Handle map ready
+                          },
+                        ),
+                        children: [
+                          TileLayer(
+                            urlTemplate:
+                                'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                            errorTileCallback: (tile, error, __) {
+                              if (!mounted) return;
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (mounted) {
+                                  setState(() {
+                                    _hasNetworkError = true;
+                                  });
+                                }
+                              });
+                            },
+                          ),
+                          MarkerLayer(
+                            markers: [
+                              Marker(
+                                point: _selectedLocation,
+                                width: 50,
+                                height: 50,
+                                child: const Icon(
+                                  Icons.location_on,
+                                  color: Colors.red,
+                                  size: 50,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
+                if (_isLoading)
+                  const Center(child: CircularProgressIndicator()),
+                Positioned(
+                  right: 16,
+                  top: 16,
+                  child: Column(
+                    children: [
+                      FloatingActionButton(
+                        heroTag: "zoom_in_fab",
+                        mini: true,
+                        onPressed: () {
+                          _mapController.move(
+                            _mapController.center,
+                            _mapController.zoom + 1,
+                          );
+                        },
+                        child: const Icon(Icons.zoom_in),
+                      ),
+                      const SizedBox(height: 8),
+                      FloatingActionButton(
+                        heroTag: "zoom_out_fab",
+                        mini: true,
+                        onPressed: () {
+                          _mapController.move(
+                            _mapController.center,
+                            _mapController.zoom - 1,
+                          );
+                        },
+                        child: const Icon(Icons.zoom_out),
+                      ),
                     ],
                   ),
+                ),
+              ],
+            ),
           ),
           Container(
             padding: const EdgeInsets.all(16),
@@ -230,10 +369,10 @@ class _LocationPickerViewState extends State<LocationPickerView> {
             child: Column(
               children: [
                 Text(
-                  _address.isNotEmpty ? _address : 'Tap to select location',
+                  _address.isNotEmpty ? _address : 'Tap to select location'.tr,
                   style: const TextStyle(fontSize: 14),
                   textAlign: TextAlign.center,
-                  maxLines: 2,
+                  maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 12),
@@ -254,7 +393,7 @@ class _LocationPickerViewState extends State<LocationPickerView> {
                       backgroundColor: AppTheme.primaryColor,
                     ),
                     child: Text(
-                      'Confirm Location',
+                      'Confirm Location'.tr,
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 16,
