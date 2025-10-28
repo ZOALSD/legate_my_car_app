@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -25,9 +26,16 @@ class _LocationPickerViewState extends State<LocationPickerView> {
   final MapController _mapController = MapController();
   final Dio _dio = Dio(
     BaseOptions(
-      headers: {'User-Agent': 'LegateMyCar/1.0'},
-      connectTimeout: const Duration(seconds: 5),
-      receiveTimeout: const Duration(seconds: 5),
+      headers: {
+        'User-Agent': 'LegateMyCar/1.0',
+        'Accept': 'application/json',
+        'Connection': 'keep-alive',
+      },
+      connectTimeout: const Duration(seconds: 10),
+      receiveTimeout: const Duration(seconds: 10),
+      sendTimeout: const Duration(seconds: 10),
+      followRedirects: true,
+      maxRedirects: 3,
     ),
   );
   final CancelToken _cancelToken = CancelToken();
@@ -35,6 +43,9 @@ class _LocationPickerViewState extends State<LocationPickerView> {
   String _address = '';
   bool _hasNetworkError = false;
   bool _isLoading = false;
+  int _retryCount = 0;
+  static const int _maxRetries = 3;
+  Timer? _debounceTimer;
 
   @override
   void initState() {
@@ -53,12 +64,32 @@ class _LocationPickerViewState extends State<LocationPickerView> {
     _mapController.dispose();
     _cancelToken.cancel();
     _dio.close();
+    _debounceTimer?.cancel();
     super.dispose();
   }
 
   Future<bool> _checkConnectivity() async {
-    final result = await Connectivity().checkConnectivity();
-    return result != ConnectivityResult.none;
+    try {
+      final result = await Connectivity().checkConnectivity();
+      return result != ConnectivityResult.none;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<void> _retryWithBackoff() async {
+    if (_retryCount >= _maxRetries) {
+      _retryCount = 0;
+      return;
+    }
+
+    _retryCount++;
+    final delay = Duration(seconds: _retryCount * 2);
+    await Future.delayed(delay);
+
+    if (mounted) {
+      await _getCurrentLocation();
+    }
   }
 
   Future<void> _getCurrentLocation() async {
@@ -148,6 +179,13 @@ class _LocationPickerViewState extends State<LocationPickerView> {
     }
   }
 
+  void _debouncedUpdateAddress(double lat, double lon) {
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 500), () {
+      _updateAddress(lat, lon);
+    });
+  }
+
   Future<void> _updateAddress(double lat, double lon) async {
     final coordinateString =
         '${lat.toStringAsFixed(6)}, ${lon.toStringAsFixed(6)}';
@@ -181,6 +219,9 @@ class _LocationPickerViewState extends State<LocationPickerView> {
           'addressdetails': 1,
         },
         cancelToken: _cancelToken,
+        options: Options(
+          validateStatus: (status) => status != null && status < 500,
+        ),
       );
 
       if (response.statusCode == 200 && response.data['display_name'] != null) {
@@ -199,9 +240,27 @@ class _LocationPickerViewState extends State<LocationPickerView> {
           _hasNetworkError = true;
           _isLoading = false;
         });
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Failed to fetch address'.tr)));
+
+        // Show retry option for network errors
+        if (e is DioException &&
+            (e.type == DioExceptionType.connectionTimeout ||
+                e.type == DioExceptionType.receiveTimeout ||
+                e.type == DioExceptionType.connectionError)) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Network error. Retrying...'.tr),
+              action: SnackBarAction(
+                label: 'Retry'.tr,
+                onPressed: () => _updateAddress(lat, lon),
+              ),
+              duration: const Duration(seconds: 5),
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Failed to fetch address'.tr)));
+        }
       }
     }
   }
@@ -264,12 +323,19 @@ class _LocationPickerViewState extends State<LocationPickerView> {
                                 if (await _checkConnectivity()) {
                                   setState(() {
                                     _hasNetworkError = false;
+                                    _retryCount = 0;
                                   });
                                   await _getCurrentLocation();
                                 } else {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
                                       content: Text('Still no connection'.tr),
+                                      action: SnackBarAction(
+                                        label: 'Retry'.tr,
+                                        onPressed: () async {
+                                          await _retryWithBackoff();
+                                        },
+                                      ),
                                     ),
                                   );
                                 }
@@ -290,7 +356,10 @@ class _LocationPickerViewState extends State<LocationPickerView> {
                             setState(() {
                               _selectedLocation = point;
                             });
-                            _updateAddress(point.latitude, point.longitude);
+                            _debouncedUpdateAddress(
+                              point.latitude,
+                              point.longitude,
+                            );
                           },
                           onMapReady: () {
                             // Handle map ready
@@ -300,15 +369,27 @@ class _LocationPickerViewState extends State<LocationPickerView> {
                           TileLayer(
                             urlTemplate:
                                 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                            userAgentPackageName: 'com.example.legate_my_car',
+                            maxZoom: 18,
                             errorTileCallback: (tile, error, __) {
                               if (!mounted) return;
-                              WidgetsBinding.instance.addPostFrameCallback((_) {
-                                if (mounted) {
-                                  setState(() {
-                                    _hasNetworkError = true;
-                                  });
-                                }
-                              });
+
+                              // Only show error for critical failures, not individual tile failures
+                              if (error != null &&
+                                  error.toString().contains('network')) {
+                                WidgetsBinding.instance.addPostFrameCallback((
+                                  _,
+                                ) {
+                                  if (mounted) {
+                                    setState(() {
+                                      _hasNetworkError = true;
+                                    });
+                                  }
+                                });
+                              }
+                            },
+                            tileBuilder: (context, tileWidget, tile) {
+                              return tileWidget;
                             },
                           ),
                           MarkerLayer(
