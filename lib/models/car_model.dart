@@ -1,16 +1,21 @@
 class CarModel {
-  final int id;
-  final String plateNumber;
-  final String chassisNumber;
+  final String id;
+  final String? plateNumber;
+  final String? chassisNumber;
   final String? brand;
   final String? model;
   final String? color;
   final String? description;
   final String? imagePath;
+  final String? imageUrl;
   final int userId;
   final String status;
   final DateTime? lostDate;
   final String? location;
+  final String? latitude;
+  final String? longitude;
+  final String? phoneNumber;
+  final int? carNumber;
   final String? contactInfo;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -24,10 +29,15 @@ class CarModel {
     required this.color,
     required this.description,
     this.imagePath,
+    this.imageUrl,
     required this.userId,
     required this.status,
     required this.lostDate,
     required this.location,
+    this.latitude,
+    this.longitude,
+    this.phoneNumber,
+    this.carNumber,
     this.contactInfo,
     required this.createdAt,
     required this.updatedAt,
@@ -35,7 +45,7 @@ class CarModel {
 
   factory CarModel.fromJson(Map<String, dynamic> json) {
     return CarModel(
-      id: json['id'] ?? 0,
+      id: json['id']?.toString() ?? '',
       plateNumber: json['plate_number'] ?? '',
       chassisNumber: json['chassis_number'] ?? '',
       brand: json['brand'] ?? '',
@@ -45,10 +55,14 @@ class CarModel {
       imagePath: json['image_path'],
       userId: json['user_id'] ?? 0,
       status: json['status'] ?? '',
-      lostDate: DateTime.parse(
-        json['lost_date'] ?? DateTime.now().toIso8601String(),
-      ),
+      lostDate: json['lost_date'] != null
+          ? DateTime.parse(json['lost_date'])
+          : null,
       location: json['location'] ?? '',
+      latitude: json['latitude']?.toString(),
+      longitude: json['longitude']?.toString(),
+      phoneNumber: json['phone_number'],
+      carNumber: json['car_number'],
       contactInfo: json['contact_info'],
       createdAt: DateTime.parse(
         json['created_at'] ?? DateTime.now().toIso8601String(),
@@ -69,10 +83,15 @@ class CarModel {
       'color': color,
       'description': description,
       'image_path': imagePath,
+      'image_url': imageUrl,
       'user_id': userId,
       'status': status,
       'lost_date': lostDate?.toIso8601String(),
       'location': location,
+      'latitude': latitude,
+      'longitude': longitude,
+      'phone_number': phoneNumber,
+      'car_number': carNumber,
       'contact_info': contactInfo,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
@@ -91,6 +110,12 @@ class CarModel {
 
   /// Get full image URL
   String? get fullImageUrl {
+    // First try imageUrl if available
+    if (imageUrl != null && imageUrl!.isNotEmpty) {
+      return imageUrl;
+    }
+
+    // Fallback to imagePath
     if (imagePath == null || imagePath!.isEmpty) {
       return null;
     }

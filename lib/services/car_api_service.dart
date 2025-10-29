@@ -1,7 +1,9 @@
+import 'dart:io';
 import 'package:dio/dio.dart';
 import '../models/car_model.dart';
 import '../models/api_response_model.dart';
 import '../config/env_config.dart';
+import 'auth_service.dart';
 
 class CarApiService {
   static String get baseUrl => EnvConfig.apiBaseUrl;
@@ -73,22 +75,47 @@ class CarApiService {
     }
   }
 
-  // Create new car report
-  static Future<CarModel> createCar(CarModel car) async {
+  // Create new car report with multipart form data
+  static Future<CarModel> createCar({
+    required String? plateNumber,
+    required String? chassisNumber,
+    required String? brand,
+    required String? model,
+    required String? description,
+    required String? location,
+    required String? latitude,
+    required String? longitude,
+    File? imageFile,
+  }) async {
     try {
+      final authHeaders = await AuthService.getAuthHeaders();
+
       final dio = Dio(
         BaseOptions(
+          baseUrl: 'https://${EnvConfig.defaultApiUrl}',
           headers: {
-            'Content-Type': 'application/json',
             'Accept': 'application/json',
+            'Authorization': authHeaders['Authorization'],
           },
         ),
       );
 
-      final response = await dio.post(
-        '$baseUrl/api/v1/cars',
-        data: car.toJson(),
-      );
+      // Create FormData for multipart request
+      final formData = FormData.fromMap({
+        'plate_number': plateNumber,
+        'chassis_number': chassisNumber,
+        'brand': brand,
+        'model': model,
+        'description': description,
+        'location': location,
+        'latitude': latitude,
+        'longitude': longitude,
+        'status': 'lost', // Default status
+        if (imageFile != null)
+          'image_path': await MultipartFile.fromFile(imageFile.path),
+      });
+
+      final response = await dio.post('$baseUrl/cars', data: formData);
 
       if (response.statusCode == 201) {
         final Map<String, dynamic> jsonData = response.data;

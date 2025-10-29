@@ -43,6 +43,7 @@ class EnTranslations {
     'DESCRIPTION': 'Description',
     'CONTACT_OWNER': 'Contact Owner',
     'FULL_CAR_NAME': 'Full Car Name',
+    'PHONE_NUMBER': 'Phone Number',
 
     // Car Information
     'PLATE': 'Plate',
@@ -68,6 +69,10 @@ class EnTranslations {
     'NO_INTERNET_CONNECTION':
         'No internet connection. Please check your connection and try again.',
     'TRY_AGAIN': 'Try Again',
+    'LOCATION_NOT_AVAILABLE': 'Location not available',
+    'UNABLE_TO_OPEN_WHATSAPP':
+        'Unable to open WhatsApp. Please make sure WhatsApp is installed.',
+    'SHARE_LOCATION': 'Share Location',
 
     // Success Messages
     'DATA_LOADED': 'Data loaded successfully',

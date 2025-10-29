@@ -17,14 +17,18 @@ class SearchWidget extends StatefulWidget {
 }
 
 class _SearchWidgetState extends State<SearchWidget> {
+  FocusNode? _focusNode;
+
   @override
   void initState() {
     super.initState();
+    _focusNode = FocusNode();
     widget.searchController.addListener(_onSearchChanged);
   }
 
   @override
   void dispose() {
+    _focusNode?.dispose();
     widget.searchController.removeListener(_onSearchChanged);
     super.dispose();
   }
@@ -51,8 +55,10 @@ class _SearchWidgetState extends State<SearchWidget> {
         ],
       ),
       child: TextField(
+        autofocus: false,
+        focusNode: _focusNode,
         controller: widget.searchController,
-        style: const TextStyle(color: Colors.white, fontSize: 16),
+        style: const TextStyle(fontSize: 16),
         onChanged: (value) {
           widget.viewModel.searchCars(value);
         },
@@ -63,12 +69,23 @@ class _SearchWidgetState extends State<SearchWidget> {
             padding: EdgeInsets.all(5),
             child: Icon(Icons.search, color: Colors.grey, size: 20),
           ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: const BorderSide(width: 0.5),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: const BorderSide(width: 0.5),
+          ),
           suffixIcon: widget.searchController.text.isNotEmpty
               ? IconButton(
                   icon: const Icon(Icons.clear, color: Colors.grey, size: 20),
                   onPressed: () {
                     widget.searchController.clear();
                     widget.viewModel.clearSearch();
+                    setState(() {
+                      // Update UI after clearing
+                    });
                   },
                 )
               : null,

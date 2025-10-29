@@ -56,6 +56,9 @@ dependencies:
   flutter_svg: ^2.2.1
   image_picker: ^1.2.0
 
+  # URL launcher
+  url_launcher: ^6.3.2
+
   # Location
   geolocator: ^10.1.0
   open_street_map_search_and_pick: ^0.1.1

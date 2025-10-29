@@ -44,6 +44,7 @@ class ArTranslations {
     'DESCRIPTION': 'الوصف',
     'CONTACT_OWNER': 'التواصل مع المالك',
     'FULL_CAR_NAME': 'اسم السيارة الكامل',
+    'PHONE_NUMBER': 'رقم الهاتف',
 
     // Car Information
     'PLATE': 'اللوحة',
@@ -69,6 +70,10 @@ class ArTranslations {
     'NO_INTERNET_CONNECTION':
         'لا يوجد اتصال بالإنترنت. يرجى التحقق من اتصالك والمحاولة مرة أخرى.',
     'TRY_AGAIN': 'إعادة المحاولة',
+    'LOCATION_NOT_AVAILABLE': 'الموقع غير متاح',
+    'UNABLE_TO_OPEN_WHATSAPP':
+        'لا يمكن فتح واتساب. يرجى التأكد من تثبيت واتساب.',
+    'SHARE_LOCATION': 'مشاركة الموقع',
 
     // Success Messages
     'DATA_LOADED': 'تم تحميل البيانات بنجاح',

@@ -1,9 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:get/get_utils/get_utils.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../models/car_model.dart';
-import '../theme/app_theme.dart';
 
 class CarSingleView extends StatelessWidget {
   final CarModel car;
@@ -22,14 +22,13 @@ class CarSingleView extends StatelessWidget {
               children: [
                 _buildCarImage(),
                 _buildCarDetails(),
-                _buildContactSection(),
                 const SizedBox(height: 100), // Bottom padding for FAB
               ],
             ),
           ),
         ],
       ),
-      floatingActionButton: _buildFloatingActionButton(),
+      floatingActionButton: _buildFloatingActionButton(context),
     );
   }
 
@@ -46,40 +45,50 @@ class CarSingleView extends StatelessWidget {
       actions: [
         IconButton(
           icon: const Icon(Icons.share, color: Colors.black),
-          onPressed: () => _shareCar(),
-        ),
-        IconButton(
-          icon: const Icon(Icons.more_vert, color: Colors.black),
-          onPressed: () => _showMoreOptions(context),
+          onPressed: () => _shareCar(context),
         ),
       ],
     );
   }
 
   Widget _buildCarImage() {
+    final imageUrl = car.fullImageUrl;
     return SizedBox(
       height: 300,
       width: double.infinity,
       child: Stack(
         children: [
-          CachedNetworkImage(
-            imageUrl: car.fullImageUrl ?? '',
-            width: double.infinity,
-            height: double.infinity,
-            fit: BoxFit.cover,
-            placeholder: (context, url) => Container(
-              color: Colors.white,
-              child: const Center(
-                child: CircularProgressIndicator(color: Colors.white),
-              ),
-            ),
-            errorWidget: (context, url, error) => Container(
-              color: Colors.white,
-              child: const Center(
-                child: Icon(Icons.car_rental, color: Colors.grey, size: 80),
-              ),
-            ),
-          ),
+          imageUrl != null && imageUrl.isNotEmpty
+              ? CachedNetworkImage(
+                  imageUrl: imageUrl,
+                  width: double.infinity,
+                  height: double.infinity,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => Container(
+                    color: Colors.white,
+                    child: const Center(
+                      child: CircularProgressIndicator(color: Colors.white),
+                    ),
+                  ),
+                  errorWidget: (context, url, error) => Container(
+                    color: Colors.white,
+                    child: const Center(
+                      child: Icon(
+                        Icons.car_rental,
+                        color: Colors.grey,
+                        size: 80,
+                      ),
+                    ),
+                  ),
+                )
+              : Container(
+                  width: double.infinity,
+                  height: double.infinity,
+                  color: Colors.white,
+                  child: const Center(
+                    child: Icon(Icons.car_rental, color: Colors.grey, size: 80),
+                  ),
+                ),
           // Gradient overlay
           Container(
             decoration: BoxDecoration(
@@ -110,228 +119,146 @@ class CarSingleView extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Car name and brand
-          Row(
-            children: [
-              SvgPicture.asset('assets/images/logo.svg', width: 24, height: 24),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  car.fullCarName,
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-
-          // Car specifications
-          _buildDetailRow(
-            'Plate Number',
-            car.plateNumber,
-            Icons.confirmation_number,
-          ),
-          _buildDetailRow(
-            'Chassis Number',
-            car.chassisNumber,
-            Icons.fingerprint,
-          ),
-          _buildDetailRow('Model Year', '2021', Icons.calendar_today),
+          _buildDetailRow('CHASSIS_NUMBER'.tr, car.chassisNumber ?? " - "),
+          _buildDetailRow('PLATE_NUMBER'.tr, car.plateNumber ?? " - "),
+          _buildDetailRow('LOCATION'.tr, car.location ?? " - "),
+          _buildDetailRow('BRAND'.tr, car.brand ?? " - "),
+          _buildDetailRow('MODEL'.tr, car.model ?? " - "),
+          _buildDetailRow('DESCRIPTION'.tr, car.description ?? " - "),
         ],
       ),
     );
   }
 
-  Widget _buildDetailRow(String label, String value, IconData icon) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, size: 20),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
+  Widget _buildDetailRow(String label, String value) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Flexible(
+                flex: 3,
+                child: Text(
                   label,
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black87,
+                  ),
                 ),
-                Text(
+              ),
+              const SizedBox(width: 16),
+              Flexible(
+                flex: 7,
+                child: Text(
                   value,
                   style: const TextStyle(
-                    color: Colors.white,
                     fontSize: 16,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w500,
                   ),
+                  textAlign: TextAlign.right,
+                  softWrap: true,
+                  overflow: TextOverflow.visible,
                 ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildContactSection() {
-    if (car.contactInfo == null || car.contactInfo!.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.grey[900],
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Contact Information',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              const Icon(Icons.phone, color: AppTheme.secondaryColor, size: 24),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  car.contactInfo!,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.call, color: AppTheme.secondaryColor),
-                onPressed: () => _makeCall(car.contactInfo!),
               ),
             ],
           ),
-        ],
-      ),
+        ),
+        Visibility(
+          visible: label != 'DESCRIPTION'.tr,
+          child: Column(
+            children: [
+              Divider(color: Colors.grey.withValues(alpha: 0.5), thickness: .5),
+              const SizedBox(height: 10),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _buildFloatingActionButton() {
+  Widget _buildFloatingActionButton(BuildContext context) {
     return FloatingActionButton.extended(
-      onPressed: () => _showContactOptions(),
-      backgroundColor: AppTheme.primaryColor,
-      icon: const Icon(Icons.contact_support, color: Colors.white),
-      label: const Text(
-        'Contact Owner',
+      onPressed: () => _shareLocation(context),
+      icon: const Icon(Icons.location_on, color: Colors.white),
+      label: Text(
+        "SHARE_LOCATION".tr,
         style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
       ),
     );
   }
 
-  void _shareCar() {
+  void _shareCar(BuildContext context) {
     // TODO: Implement share functionality
-    Get.snackbar(
-      'Share',
-      'Share functionality will be implemented',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.white,
-      colorText: Colors.white,
-    );
   }
 
-  void _showMoreOptions(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.grey[900],
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.share, color: Colors.white),
-              title: const Text('Share', style: TextStyle(color: Colors.white)),
-              onTap: () {
-                Navigator.pop(context);
-                _shareCar();
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.report, color: Colors.white),
-              title: const Text(
-                'Report',
-                style: TextStyle(color: Colors.white),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                _reportCar();
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.bookmark, color: Colors.white),
-              title: const Text('Save', style: TextStyle(color: Colors.white)),
-              onTap: () {
-                Navigator.pop(context);
-                _saveCar();
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  Future<void> _shareLocation(BuildContext context) async {
+    // use latitude and longitude to share location
+    final latitude = car.latitude;
+    final longitude = car.longitude;
+    if (latitude != null && longitude != null) {
+      // Create Google Maps URL
+      final googleMapsUrl =
+          'https://www.google.com/maps/search/?api=1&query=$latitude,$longitude';
 
-  void _makeCall(String phoneNumber) {
-    // TODO: Implement call functionality
-    Get.snackbar(
-      'Call',
-      'Calling $phoneNumber',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.white,
-      colorText: Colors.white,
-    );
-  }
+      // Create WhatsApp share URL with the location link
+      final message = Uri.encodeComponent('Location: $googleMapsUrl');
 
-  void _showContactOptions() {
-    Get.snackbar(
-      'Contact',
-      'Contact options will be implemented',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.white,
-      colorText: Colors.white,
-    );
-  }
+      // Use platform-specific WhatsApp URL schemes
+      String whatsappUrl;
+      if (Platform.isIOS) {
+        // iOS WhatsApp URL scheme
+        whatsappUrl = 'whatsapp://send?text=$message';
+      } else if (Platform.isAndroid) {
+        // Android WhatsApp URL scheme
+        whatsappUrl = 'https://wa.me/?text=$message';
+      } else {
+        // Fallback to web version
+        whatsappUrl = 'https://wa.me/?text=$message';
+      }
 
-  void _reportCar() {
-    Get.snackbar(
-      'Report',
-      'Report functionality will be implemented',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.white,
-      colorText: Colors.white,
-    );
-  }
+      try {
+        final uri = Uri.parse(whatsappUrl);
+        final launched = await launchUrl(
+          uri,
+          mode: LaunchMode.externalApplication,
+        );
 
-  void _saveCar() {
-    Get.snackbar(
-      'Save',
-      'Car saved to favorites',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.white,
-      colorText: Colors.white,
-    );
+        if (!launched && context.mounted) {
+          // If direct scheme fails, try web version as fallback
+          if (Platform.isIOS || Platform.isAndroid) {
+            final webWhatsappUrl = 'https://wa.me/?text=$message';
+            final webUri = Uri.parse(webWhatsappUrl);
+            final webLaunched = await launchUrl(
+              webUri,
+              mode: LaunchMode.externalApplication,
+            );
+            if (!webLaunched && context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('UNABLE_TO_OPEN_WHATSAPP'.tr)),
+              );
+            }
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('UNABLE_TO_OPEN_WHATSAPP'.tr)),
+            );
+          }
+        }
+      } catch (e) {
+        // Handle platform exception or other errors
+        if (context.mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('UNABLE_TO_OPEN_WHATSAPP'.tr)));
+        }
+      }
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('LOCATION_NOT_AVAILABLE'.tr)));
+    }
   }
 }

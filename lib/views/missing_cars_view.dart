@@ -272,7 +272,15 @@ class MissingCarCard extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: () => viewModel.contactOwner(car),
+                onPressed: () {
+                  final contactInfo = viewModel.contactOwner(car);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Contact: $contactInfo'),
+                      behavior: SnackBarBehavior.fixed,
+                    ),
+                  );
+                },
                 icon: const Icon(Icons.contact_phone),
                 label: Text('CONTACT_OWNER'.tr),
                 style: ElevatedButton.styleFrom(

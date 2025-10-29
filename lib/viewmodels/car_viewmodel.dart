@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import '../models/car_model.dart';
 import '../services/api_service.dart';
@@ -14,7 +13,6 @@ class CarViewModel extends GetxController {
 
   // Observable variables
   final RxList<CarModel> _cars = <CarModel>[].obs;
-  final RxList<CarModel> _filteredCars = <CarModel>[].obs;
   final RxBool _isLoading = false.obs;
   final RxString _searchQuery = ''.obs;
   final RxString _selectedStatus = 'all'.obs;
@@ -26,7 +24,6 @@ class CarViewModel extends GetxController {
 
   // Getters
   List<CarModel> get cars => _cars;
-  List<CarModel> get filteredCars => _filteredCars;
   bool get isLoading => _isLoading.value;
   String get searchQuery => _searchQuery.value;
   String get selectedStatus => _selectedStatus.value;
@@ -47,7 +44,11 @@ class CarViewModel extends GetxController {
   }
 
   // Load all cars
-  Future<void> loadCars({int page = 1, bool append = false}) async {
+  Future<void> loadCars({
+    int page = 1,
+    bool append = false,
+    String? chassisNumber,
+  }) async {
     try {
       _isLoading.value = true;
       _errorMessage.value = '';
@@ -55,8 +56,7 @@ class CarViewModel extends GetxController {
       final response = await ApiService.getAllCars(
         page: page,
         perPage: 10,
-        status: _selectedStatus.value == 'all' ? null : _selectedStatus.value,
-        search: _searchQuery.value.isEmpty ? null : _searchQuery.value,
+        chassisNumber: chassisNumber,
       );
 
       if (append && page > 1) {
@@ -65,16 +65,13 @@ class CarViewModel extends GetxController {
         _cars.value = response.cars;
       }
 
-      _filteredCars.value = _cars;
       _currentPage.value = response.pagination.currentPage;
       _totalPages.value = response.pagination.lastPage;
       _totalCars.value = response.pagination.total;
       _hasMorePages.value = response.pagination.hasMorePages;
     } catch (e) {
-      debugPrint('Error loading cars: $e');
       _errorMessage.value = e.toString();
       _cars.value = [];
-      _filteredCars.value = [];
       _currentPage.value = 1;
       _totalPages.value = 1;
       _totalCars.value = 0;
@@ -86,9 +83,10 @@ class CarViewModel extends GetxController {
 
   // Search cars
   Future<void> searchCars(String query) async {
+    await Future.delayed(const Duration(milliseconds: 700));
     _searchQuery.value = query;
     _currentPage.value = 1;
-    await loadCars(page: 1);
+    await loadCars(page: 1, chassisNumber: query);
   }
 
   // Filter by status

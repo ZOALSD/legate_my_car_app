@@ -32,16 +32,17 @@ class MyApp extends StatelessWidget {
         GlobalCupertinoLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
       ],
+
       // RTL support for Arabic
-      builder: (context, child) {
-        final languageController = Get.find<LanguageController>();
-        return Directionality(
-          textDirection: languageController.isArabic
-              ? ui.TextDirection.rtl
-              : ui.TextDirection.ltr,
-          child: child!,
-        );
-      },
+      // builder: (context, child) {
+      //   final languageController = Get.find<LanguageController>();
+      //   return Directionality(
+      //     textDirection: languageController.isArabic
+      //         ? ui.TextDirection.rtl
+      //         : ui.TextDirection.ltr,
+      //     child: child!,
+      //   );
+      // },
       home: const IntroView(),
     );
   }

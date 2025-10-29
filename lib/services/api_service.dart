@@ -1,3 +1,5 @@
+import 'package:get/get_utils/get_utils.dart';
+
 import '../models/car_model.dart';
 import '../models/api_response_model.dart';
 import '../config/env_config.dart';
@@ -9,16 +11,14 @@ class ApiService {
   static Future<CarsApiResponse> getAllCars({
     int page = 1,
     int perPage = 10,
-    String? status,
-    String? search,
+    String? chassisNumber,
   }) async {
     try {
       // Check internet connection first
       final hasInternet = await ConnectionHelper.hasInternet();
 
       if (!hasInternet) {
-        print('⚠️ No internet connection, using demo data');
-        throw Exception('No internet connection');
+        throw Exception("NO_INTERNET_CONNECTION".tr);
       }
 
       // Fetch from real API
@@ -27,12 +27,8 @@ class ApiService {
         'per_page': perPage.toString(),
       };
 
-      if (status != null && status.isNotEmpty && status != 'all') {
-        queryParams['status'] = status;
-      }
-
-      if (search != null && search.isNotEmpty) {
-        queryParams['search'] = search;
+      if (chassisNumber != null && chassisNumber.isNotEmpty) {
+        queryParams['chassis_number'] = chassisNumber;
       }
 
       final endpoint = '${EnvConfig.apiBaseUrl}/cars';
@@ -43,46 +39,12 @@ class ApiService {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonData = response.data;
-
-        // Debug: print response structure
-        print('📦 API Response received');
-        print('📦 Has data array: ${jsonData['data'] != null}');
-        print('📦 Has pagination: ${jsonData['pagination'] != null}');
-        if (jsonData['data'] != null && jsonData['data'] is List) {
-          print('📦 Data array length: ${(jsonData['data'] as List).length}');
-        }
-
-        final carsResponse = CarsApiResponse.fromJson(jsonData);
-        print('✅ Parsed ${carsResponse.cars.length} cars');
-
-        return carsResponse;
+        return CarsApiResponse.fromJson(jsonData);
       } else {
         throw Exception('Failed to load cars: ${response.statusCode}');
       }
     } catch (e) {
-      print('⚠️ API unavailable, using demo data: $e');
-      print('📝 Error type: ${e.runtimeType}');
       rethrow;
-    }
-  }
-
-  // Search cars with pagination
-  static Future<CarsApiResponse> searchCars(
-    String query, {
-    int page = 1,
-    int perPage = 10,
-    String? status,
-  }) async {
-    try {
-      final response = await getAllCars(
-        page: page,
-        perPage: perPage,
-        status: status,
-        search: query,
-      );
-      return response;
-    } catch (e) {
-      throw Exception('Error searching cars: $e');
     }
   }
 

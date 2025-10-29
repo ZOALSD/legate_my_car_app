@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../theme/app_theme.dart';
+import '../services/car_api_service.dart';
 import 'location_picker_view.dart';
 
 class AddCarView extends StatefulWidget {
@@ -28,7 +29,6 @@ class _AddCarViewState extends State<AddCarView> {
   final ImagePicker _picker = ImagePicker();
   double? _selectedLatitude;
   double? _selectedLongitude;
-  String? _selectedAddress;
 
   @override
   void dispose() {
@@ -100,7 +100,7 @@ class _AddCarViewState extends State<AddCarView> {
                         controller: _chassisNumberController,
                         label: 'CHASSIS_NUMBER'.tr,
                         hint: 'Enter chassis number (optional)',
-                        required: false,
+                        required: true,
                       ),
                       const SizedBox(height: 16),
 
@@ -111,7 +111,7 @@ class _AddCarViewState extends State<AddCarView> {
                               controller: _brandController,
                               label: 'BRAND'.tr,
                               hint: 'مثال: تويوتا',
-                              required: true,
+                              required: false,
                             ),
                           ),
                           const SizedBox(width: 16),
@@ -120,7 +120,7 @@ class _AddCarViewState extends State<AddCarView> {
                               controller: _modelController,
                               label: 'MODEL'.tr,
                               hint: 'مثال: كورولا',
-                              required: true,
+                              required: false,
                             ),
                           ),
                         ],
@@ -152,7 +152,7 @@ class _AddCarViewState extends State<AddCarView> {
                     controller: _conditionDescriptionController,
                     label: 'CONDITION_DESCRIPTION'.tr,
                     hint: 'ENTER_CONDITION_DETAILS'.tr,
-                    required: true,
+                    required: false,
                     maxLines: 3,
                   ),
                 ),
@@ -288,8 +288,7 @@ class _AddCarViewState extends State<AddCarView> {
               setState(() {
                 _selectedLatitude = result['latitude'];
                 _selectedLongitude = result['longitude'];
-                _selectedAddress = result['address'];
-                _locationController.text = _selectedAddress ?? '';
+                _locationController.text = result['address'] ?? '';
               });
             }
           },
@@ -527,13 +526,13 @@ class _AddCarViewState extends State<AddCarView> {
       }
 
       if (!permissionGranted && source == ImageSource.camera) {
-        Get.snackbar(
-          'Permission Denied'.tr,
-          'Please grant camera permission in settings'.tr,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: AppTheme.errorColor,
-          colorText: AppTheme.sudanWhite,
-          duration: const Duration(seconds: 4),
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Please grant camera permission in settings'.tr),
+            backgroundColor: AppTheme.errorColor,
+            duration: const Duration(seconds: 4),
+            behavior: SnackBarBehavior.fixed,
+          ),
         );
         return;
       }
@@ -551,48 +550,69 @@ class _AddCarViewState extends State<AddCarView> {
         });
       }
     } catch (e) {
-      Get.snackbar(
-        'ERROR'.tr,
-        'Failed to pick image. Please try again.'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppTheme.errorColor,
-        colorText: AppTheme.sudanWhite,
-        duration: const Duration(seconds: 3),
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to pick image. Please try again.'.tr),
+          backgroundColor: AppTheme.errorColor,
+          duration: const Duration(seconds: 3),
+          behavior: SnackBarBehavior.fixed,
+        ),
       );
     }
   }
 
   Future<void> _submitCarReport() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
+    // if (!_formKey.currentState!.validate()) {
+    //   return;
+    // }
 
     setState(() {
       _isLoading = true;
     });
 
     try {
-      await Future.delayed(const Duration(seconds: 2));
+      // Create car report
+      await CarApiService.createCar(
+        plateNumber: _plateNumberController.text.trim(),
+        chassisNumber: _chassisNumberController.text.trim(),
+        brand: _brandController.text.trim(),
+        model: _modelController.text.trim(),
+        description: _conditionDescriptionController.text.trim(),
+        location: _locationController.text.trim(),
+        latitude: _selectedLatitude!.toString(),
+        longitude: _selectedLongitude!.toString(),
+        imageFile: _selectedImage,
+      );
 
-      Get.snackbar(
-        'SUCCESS'.tr,
-        'CAR_REPORT_SUCCESS'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppTheme.secondaryColor,
-        colorText: AppTheme.sudanWhite,
-        icon: const Icon(Icons.check_circle, color: AppTheme.sudanWhite),
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.check_circle, color: AppTheme.sudanWhite),
+              const SizedBox(width: 8),
+              Expanded(child: Text('CAR_REPORT_SUCCESS'.tr)),
+            ],
+          ),
+          backgroundColor: AppTheme.secondaryColor,
+          behavior: SnackBarBehavior.fixed,
+        ),
       );
 
       _clearForm();
       Get.back();
     } catch (e) {
-      Get.snackbar(
-        'ERROR'.tr,
-        'CAR_REPORT_ERROR'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppTheme.errorColor,
-        colorText: AppTheme.sudanWhite,
-        icon: const Icon(Icons.error, color: AppTheme.sudanWhite),
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.error, color: AppTheme.sudanWhite),
+              const SizedBox(width: 8),
+              Expanded(child: Text('CAR_REPORT_ERROR'.tr)),
+            ],
+          ),
+          backgroundColor: AppTheme.errorColor,
+          behavior: SnackBarBehavior.fixed,
+        ),
       );
     } finally {
       setState(() {
@@ -610,5 +630,7 @@ class _AddCarViewState extends State<AddCarView> {
     _locationController.clear();
     _conditionDescriptionController.clear();
     _selectedImage = null;
+    _selectedLatitude = null;
+    _selectedLongitude = null;
   }
 }

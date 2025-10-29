@@ -11,7 +11,7 @@ import '../models/car_model.dart';
 class _AppConstants {
   static const double cardBorderRadius = 12.0;
   static const double gridSpacing = 12.0;
-  static const double cardAspectRatio = 0.8;
+  static const double cardAspectRatio = 0.75;
   static const int gridCrossAxisCount = 2;
   static const double paginationTriggerDistance = 200.0;
   static const double headerPadding = 20.0;
@@ -49,7 +49,6 @@ class _CarListViewState extends State<CarListView> {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent -
             _AppConstants.paginationTriggerDistance) {
-      // Load next page when user is near bottom
       if (viewModel.hasMorePages && !viewModel.isLoading) {
         viewModel.loadNextPage();
       }
@@ -57,9 +56,9 @@ class _CarListViewState extends State<CarListView> {
   }
 
   void _onSearchChanged() {
-    setState(() {
-      // This will trigger a rebuild to show/hide the clear button
-    });
+    // setState(() {
+    //   // This will trigger a rebuild to show/hide the clear button
+    // });
   }
 
   @override
@@ -69,37 +68,42 @@ class _CarListViewState extends State<CarListView> {
       body: SafeArea(
         child: Column(
           children: [
-            // Header
             _buildHeader(),
-            // Content
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: SearchWidget(
+                searchController: _searchController,
+                viewModel: viewModel,
+              ),
+            ),
             Expanded(
               child: Obx(
                 () => viewModel.isLoading && viewModel.cars.isEmpty
                     ? const Center(child: CircularProgressIndicator())
                     : viewModel.cars.isEmpty
-                    ? Center(
-                        child: Text(
-                          'No cars found',
-                          style: TextStyle(color: Colors.white, fontSize: 16),
-                        ),
+                    ? Column(
+                        children: [
+                          SizedBox(
+                            height: MediaQuery.of(context).size.height * 0.3,
+                          ),
+                          Text(
+                            "NO_CARS_FOUND".tr,
+                            style: TextStyle(fontSize: 16),
+                          ),
+                        ],
                       )
                     : RefreshIndicator(
                         onRefresh: () async {
                           await viewModel.refresh();
                         },
                         color: Colors.white,
-                        // backgroundColor: Colors.grey[800],
                         child: SingleChildScrollView(
                           controller: _scrollController,
+                          physics: const AlwaysScrollableScrollPhysics(),
                           padding: EdgeInsets.symmetric(horizontal: 16),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Search Widget
-                              SearchWidget(
-                                searchController: _searchController,
-                                viewModel: viewModel,
-                              ),
                               // Cars Grid
                               _buildCarsGrid(),
                               // Pagination indicators
@@ -159,7 +163,9 @@ class _CarListViewState extends State<CarListView> {
                   // Navigate to my request page
                   break;
                 case 'upload_car':
-                  Get.to(() => AddCarView());
+                  Get.to(
+                    () => AddCarView(),
+                  )?.then((_) => viewModel.loadCars(page: 1));
                   break;
                 case 'about_app':
                   // Show about app dialog
@@ -242,18 +248,6 @@ class _CarListViewState extends State<CarListView> {
             child: const Center(child: CircularProgressIndicator()),
           ),
 
-        // End of list indicator
-        if (!viewModel.hasMorePages && viewModel.cars.isNotEmpty)
-          Container(
-            padding: EdgeInsets.all(20),
-            child: Center(
-              child: Text(
-                'No more cars to load',
-                style: TextStyle(color: Colors.grey[400], fontSize: 14),
-              ),
-            ),
-          ),
-
         const SizedBox(height: 20),
       ],
     );
@@ -284,24 +278,39 @@ class _CarListViewState extends State<CarListView> {
                     borderRadius: BorderRadius.vertical(
                       top: Radius.circular(12),
                     ),
-                    child: CachedNetworkImage(
-                      imageUrl: vehicle.fullImageUrl ?? '',
-                      width: double.infinity,
-                      height: double.infinity,
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => Container(
-                        color: Colors.grey[800],
-                        child: const Center(child: CircularProgressIndicator()),
-                      ),
-                      errorWidget: (context, url, error) => Container(
-                        color: Colors.grey[800],
-                        child: Icon(
-                          Icons.car_rental,
-                          color: Colors.grey[400],
-                          size: 40,
-                        ),
-                      ),
-                    ),
+                    child:
+                        vehicle.fullImageUrl != null &&
+                            vehicle.fullImageUrl!.isNotEmpty
+                        ? CachedNetworkImage(
+                            imageUrl: vehicle.fullImageUrl!,
+                            width: double.infinity,
+                            height: double.infinity,
+                            fit: BoxFit.cover,
+                            placeholder: (context, url) => Container(
+                              color: Colors.grey[800],
+                              child: const Center(
+                                child: CircularProgressIndicator(),
+                              ),
+                            ),
+                            errorWidget: (context, url, error) => Container(
+                              color: Colors.grey[800],
+                              child: Icon(
+                                Icons.car_rental,
+                                color: Colors.grey[400],
+                                size: 40,
+                              ),
+                            ),
+                          )
+                        : Container(
+                            width: double.infinity,
+                            height: double.infinity,
+                            color: Colors.grey[800],
+                            child: Icon(
+                              Icons.car_crash_outlined,
+                              color: Colors.grey[400],
+                              size: 80,
+                            ),
+                          ),
                   ),
                 ],
               ),
@@ -316,13 +325,24 @@ class _CarListViewState extends State<CarListView> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      vehicle.chassisNumber,
+                      vehicle.chassisNumber ?? " - ",
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    Text("${vehicle.brand ?? ""} - ${vehicle.model ?? ""}"),
+                    Text(
+                      vehicle.plateNumber ?? " - ",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      "${vehicle.brand ?? " "} - ${vehicle.model ?? ""}",
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
                   ],
                 ),
               ),

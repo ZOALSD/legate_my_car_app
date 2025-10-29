@@ -173,14 +173,11 @@ class MissingCarViewModel extends GetxController {
   }
 
   // Contact owner
-  void contactOwner(MissingCarModel car) {
+  // Returns the contact info - snackbar handling should be done in the view
+  String contactOwner(MissingCarModel car) {
     // In a real app, this would open contact options
-    // For now, just show a message
-    Get.snackbar(
-      'Contact Owner',
-      'Contact: ${car.contactInfo}',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    // For now, just return the contact info
+    return car.contactInfo;
   }
 
   // Clear search
