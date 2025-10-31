@@ -86,9 +86,13 @@ class _CarListViewState extends State<CarListView> {
                           SizedBox(
                             height: MediaQuery.of(context).size.height * 0.3,
                           ),
-                          Text(
-                            "NO_CARS_FOUND".tr,
-                            style: TextStyle(fontSize: 16),
+                          Visibility(
+                            visible: viewModel.searchQuery.isNotEmpty,
+                            replacement: const SizedBox.shrink(),
+                            child: Text(
+                              "NO_CARS_FOUND".tr,
+                              style: TextStyle(fontSize: 16),
+                            ),
                           ),
                         ],
                       )
