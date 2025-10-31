@@ -13,7 +13,7 @@ class EnTranslations {
 
     // Car List
     'LOST_CARS_TITLE': 'Lost Cars in Sudan',
-    'SEARCH_HINT': 'Search by plate, brand, model, color, or location...',
+    'SEARCH_HINT': 'Search by the last 5 digits of the chassis',
     'NO_CARS_FOUND': 'No cars found matching your search',
     'NO_CARS_AVAILABLE': 'No cars available',
     'TRY_ADJUSTING_SEARCH': 'Try adjusting your search terms',
@@ -43,6 +43,7 @@ class EnTranslations {
     'DESCRIPTION': 'Description',
     'CONTACT_OWNER': 'Contact Owner',
     'FULL_CAR_NAME': 'Full Car Name',
+    'PHONE_NUMBER': 'Phone Number',
 
     // Car Information
     'PLATE': 'Plate',
@@ -65,6 +66,13 @@ class EnTranslations {
     'UNKNOWN_ERROR': 'An unknown error occurred.',
     'FAILED_TO_LOAD_CARS': 'Failed to load cars',
     'FAILED_TO_SEARCH_CARS': 'Failed to search cars',
+    'NO_INTERNET_CONNECTION':
+        'No internet connection. Please check your connection and try again.',
+    'TRY_AGAIN': 'Try Again',
+    'LOCATION_NOT_AVAILABLE': 'Location not available',
+    'UNABLE_TO_OPEN_WHATSAPP':
+        'Unable to open WhatsApp. Please make sure WhatsApp is installed.',
+    'SHARE_LOCATION': 'Share Location',
 
     // Success Messages
     'DATA_LOADED': 'Data loaded successfully',
@@ -130,5 +138,11 @@ class EnTranslations {
     'GALLERY_ICON': 'Gallery',
     'VOLUNTEER_ICON': 'Volunteer',
     'MATCH_ICON': 'Match',
+
+    // Menu Items
+    'MY_ACCOUNT': 'My Account',
+    'MY_REQUEST': 'My Request',
+    'UPLOAD_CAR': 'Upload Car',
+    'ABOUT_APP': 'About App',
   };
 }

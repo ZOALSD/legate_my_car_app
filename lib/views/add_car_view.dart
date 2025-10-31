@@ -1,6 +1,11 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../theme/app_theme.dart';
+import '../services/car_api_service.dart';
+import 'location_picker_view.dart';
 
 class AddCarView extends StatefulWidget {
   const AddCarView({super.key});
@@ -19,15 +24,11 @@ class _AddCarViewState extends State<AddCarView> {
   final _locationController = TextEditingController();
   final _conditionDescriptionController = TextEditingController();
 
-  String _selectedCondition = 'abandoned';
   bool _isLoading = false;
-
-  final List<String> _conditionOptions = [
-    'abandoned',
-    'damaged',
-    'burned',
-    'other',
-  ];
+  File? _selectedImage;
+  final ImagePicker _picker = ImagePicker();
+  double? _selectedLatitude;
+  double? _selectedLongitude;
 
   @override
   void dispose() {
@@ -66,138 +67,111 @@ class _AddCarViewState extends State<AddCarView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Description
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppTheme.secondaryColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: AppTheme.secondaryColor.withValues(alpha: 0.3),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.info_outline,
-                      color: AppTheme.secondaryColor,
-                      size: 24,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        'ADD_CAR_DESCRIPTION'.tr,
-                        style: const TextStyle(
-                          color: AppTheme.textPrimaryColor,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // Car Images Section
-              _buildSectionTitle('CAR_IMAGES'.tr),
+              _buildDividerWithLabel('CAR_IMAGES'.tr),
               const SizedBox(height: 12),
               _buildImageUploadSection(),
               const SizedBox(height: 24),
 
-              // Car Information Section
-              _buildSectionTitle('CAR_DETAILS'.tr),
+              _buildDividerWithLabel('CAR_DETAILS'.tr),
               const SizedBox(height: 16),
 
-              // Plate Number
-              _buildTextField(
-                controller: _plateNumberController,
-                label: 'PLATE_NUMBER'.tr,
-                hint: 'Enter plate number (optional)',
-                required: false,
-              ),
-              const SizedBox(height: 16),
-
-              // Chassis Number
-              _buildTextField(
-                controller: _chassisNumberController,
-                label: 'CHASSIS_NUMBER'.tr,
-                hint: 'Enter chassis number (optional)',
-                required: false,
-              ),
-              const SizedBox(height: 16),
-
-              // Brand and Model Row
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildTextField(
-                      controller: _brandController,
-                      label: 'BRAND'.tr,
-                      hint: 'e.g., Toyota',
-                      required: true,
-                    ),
+              Card(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 1,
+                margin: EdgeInsets.zero,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 16,
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: _buildTextField(
-                      controller: _modelController,
-                      label: 'MODEL'.tr,
-                      hint: 'e.g., Corolla',
-                      required: true,
-                    ),
+                  child: Column(
+                    children: [
+                      _buildTextField(
+                        controller: _plateNumberController,
+                        label: 'PLATE_NUMBER'.tr,
+                        hint: 'Enter plate number (optional)',
+                        required: false,
+                      ),
+                      const SizedBox(height: 16),
+
+                      _buildTextField(
+                        controller: _chassisNumberController,
+                        label: 'CHASSIS_NUMBER'.tr,
+                        hint: 'Enter chassis number (optional)',
+                        required: true,
+                      ),
+                      const SizedBox(height: 16),
+
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildTextField(
+                              controller: _brandController,
+                              label: 'BRAND'.tr,
+                              hint: 'مثال: تويوتا',
+                              required: false,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: _buildTextField(
+                              controller: _modelController,
+                              label: 'MODEL'.tr,
+                              hint: 'مثال: كورولا',
+                              required: false,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+
+                      _buildLocationField(),
+                    ],
                   ),
-                ],
-              ),
-              const SizedBox(height: 16),
-
-              // Color
-              _buildTextField(
-                controller: _colorController,
-                label: 'COLOR'.tr,
-                hint: 'e.g., White, Black, Red',
-                required: true,
-              ),
-              const SizedBox(height: 16),
-
-              // Location
-              _buildTextField(
-                controller: _locationController,
-                label: 'LOCATION'.tr,
-                hint: 'Where did you find this car?',
-                required: true,
+                ),
               ),
               const SizedBox(height: 24),
 
-              // Car Condition Section
-              _buildSectionTitle('CAR_CONDITION'.tr),
+              _buildDividerWithLabel('CAR_CONDITION'.tr),
               const SizedBox(height: 16),
 
-              // Condition Selection
-              _buildConditionSelector(),
-              const SizedBox(height: 16),
-
-              // Condition Description
-              _buildTextField(
-                controller: _conditionDescriptionController,
-                label: 'CONDITION_DESCRIPTION'.tr,
-                hint: 'ENTER_CONDITION_DETAILS'.tr,
-                required: true,
-                maxLines: 3,
+              Card(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 1,
+                margin: EdgeInsets.zero,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 16,
+                  ),
+                  child: _buildTextField(
+                    controller: _conditionDescriptionController,
+                    label: 'CONDITION_DESCRIPTION'.tr,
+                    hint: 'ENTER_CONDITION_DETAILS'.tr,
+                    required: false,
+                    maxLines: 3,
+                  ),
+                ),
               ),
               const SizedBox(height: 32),
 
-              // Submit Button
               SizedBox(
                 width: double.infinity,
-                height: 50,
+                height: 52,
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _submitCarReport,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primaryColor,
                     foregroundColor: AppTheme.sudanWhite,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(14),
                     ),
+                    elevation: 4,
+                    shadowColor: AppTheme.primaryColor.withOpacity(0.4),
                   ),
                   child: _isLoading
                       ? const SizedBox(
@@ -227,14 +201,25 @@ class _AddCarViewState extends State<AddCarView> {
     );
   }
 
-  Widget _buildSectionTitle(String title) {
-    return Text(
-      title,
-      style: const TextStyle(
-        fontSize: 18,
-        fontWeight: FontWeight.bold,
-        color: AppTheme.textPrimaryColor,
-      ),
+  // ---------- UI HELPERS ----------
+
+  Widget _buildDividerWithLabel(String text) {
+    return Row(
+      children: [
+        Expanded(child: Divider(color: Colors.grey.shade300)),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Text(
+            text,
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: AppTheme.primaryColor,
+            ),
+          ),
+        ),
+        Expanded(child: Divider(color: Colors.grey.shade300)),
+      ],
     );
   }
 
@@ -251,6 +236,8 @@ class _AddCarViewState extends State<AddCarView> {
       decoration: InputDecoration(
         labelText: label + (required ? ' *' : ''),
         hintText: hint,
+        filled: true,
+        fillColor: Colors.grey.shade50,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppTheme.primaryColor),
@@ -275,116 +262,357 @@ class _AddCarViewState extends State<AddCarView> {
     );
   }
 
-  Widget _buildImageUploadSection() {
-    return Container(
-      height: 120,
-      decoration: BoxDecoration(
-        border: Border.all(
-          color: AppTheme.primaryColor.withValues(alpha: 0.3),
-          style: BorderStyle.solid,
-        ),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.camera_alt_outlined,
-            size: 32,
-            color: AppTheme.primaryColor,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'UPLOAD_IMAGES'.tr,
-            style: const TextStyle(
-              color: AppTheme.textPrimaryColor,
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Take photos from different angles',
-            style: TextStyle(color: AppTheme.textSecondaryColor, fontSize: 12),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildConditionSelector() {
+  Widget _buildLocationField() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'CAR_CONDITION'.tr,
+          'LOCATION'.tr + ' *',
           style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
             color: AppTheme.textPrimaryColor,
           ),
         ),
         const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: _conditionOptions.map((condition) {
-            return ChoiceChip(
-              label: Text(condition.tr),
-              selected: _selectedCondition == condition,
-              onSelected: (selected) {
-                if (selected) {
-                  setState(() {
-                    _selectedCondition = condition;
-                  });
-                }
-              },
-              selectedColor: AppTheme.primaryColor.withValues(alpha: 0.2),
-              checkmarkColor: AppTheme.primaryColor,
+        InkWell(
+          onTap: () async {
+            final result = await Get.to(
+              () => LocationPickerView(
+                initialLatitude: _selectedLatitude,
+                initialLongitude: _selectedLongitude,
+              ),
             );
-          }).toList(),
+
+            if (result != null) {
+              setState(() {
+                _selectedLatitude = result['latitude'];
+                _selectedLongitude = result['longitude'];
+                _locationController.text = result['address'] ?? '';
+              });
+            }
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppTheme.primaryColor),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    _locationController.text.isEmpty
+                        ? 'Tap to pick location'
+                        : _locationController.text,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: _locationController.text.isEmpty
+                          ? Colors.grey.shade600
+                          : Colors.black,
+                    ),
+                  ),
+                ),
+                const Icon(Icons.location_on, color: AppTheme.primaryColor),
+              ],
+            ),
+          ),
         ),
       ],
     );
   }
 
-  Future<void> _submitCarReport() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
+  Widget _buildImageUploadSection() {
+    return GestureDetector(
+      onTap: () => _showImageSourceDialog(context),
+      child: Container(
+        height: MediaQuery.of(context).size.height * 0.25,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: AppTheme.primaryColor.withValues(alpha: 0.3),
+          ),
+          color: Colors.grey.shade100,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: _selectedImage == null
+            ? Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.add_a_photo_rounded,
+                    size: 40,
+                    color: AppTheme.primaryColor,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'UPLOAD_IMAGES'.tr,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.textPrimaryColor,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Tap to select a photo',
+                    style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                  ),
+                ],
+              )
+            : Stack(
+                fit: StackFit.expand,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Image.file(_selectedImage!, fit: BoxFit.cover),
+                  ),
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.black54,
+                        borderRadius: BorderRadius.circular(50),
+                      ),
+                      child: IconButton(
+                        icon: const Icon(
+                          Icons.edit,
+                          color: Colors.white,
+                          size: 22,
+                        ),
+                        onPressed: () => _showImageSourceDialog(context),
+                        tooltip: 'Change Image',
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+      ),
+    );
+  }
+
+  Future<void> _showImageSourceDialog(BuildContext dialogContext) async {
+    showModalBottomSheet(
+      context: dialogContext,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (BuildContext bottomSheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 50,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2.5),
+                  ),
+                  margin: const EdgeInsets.only(bottom: 12),
+                ),
+                Text(
+                  'Select Image Source',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.textPrimaryColor,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                ListTile(
+                  leading: const Icon(
+                    Icons.camera_alt,
+                    color: AppTheme.primaryColor,
+                  ),
+                  title: Text('TAKE_PHOTO'.tr),
+                  onTap: () {
+                    Navigator.pop(bottomSheetContext);
+                    _pickImage(ImageSource.camera);
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(
+                    Icons.photo_library,
+                    color: AppTheme.primaryColor,
+                  ),
+                  title: Text('SELECT_FROM_GALLERY'.tr),
+                  onTap: () {
+                    Navigator.pop(bottomSheetContext);
+                    _pickImage(ImageSource.gallery);
+                  },
+                ),
+                if (_selectedImage != null)
+                  ListTile(
+                    leading: const Icon(
+                      Icons.delete_forever,
+                      color: Colors.red,
+                    ),
+                    title: const Text(
+                      'Remove Current Image',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                    onTap: () {
+                      Navigator.pop(bottomSheetContext);
+                      setState(() {
+                        _selectedImage = null;
+                      });
+                    },
+                  ),
+                ListTile(
+                  leading: const Icon(Icons.close, color: Colors.grey),
+                  title: const Text('Cancel'),
+                  onTap: () => Navigator.pop(bottomSheetContext),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // ---------- LOGIC ----------
+
+  Future<bool> _requestPermission(Permission permission) async {
+    final status = await permission.status;
+    if (status.isGranted) {
+      return true;
     }
+    if (status.isDenied) {
+      final result = await permission.request();
+      return result.isGranted;
+    }
+    if (status.isPermanentlyDenied) {
+      await openAppSettings();
+      return false;
+    }
+    return false;
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      // Request appropriate permissions
+      bool permissionGranted = false;
+      if (source == ImageSource.camera) {
+        permissionGranted = await _requestPermission(Permission.camera);
+      } else {
+        if (await Permission.photos.status.isGranted ||
+            await Permission.storage.status.isGranted) {
+          permissionGranted = true;
+        } else {
+          // Request permission based on Android version
+          if (await Permission.photos.request().isGranted ||
+              await Permission.storage.request().isGranted) {
+            permissionGranted = true;
+          }
+        }
+      }
+
+      if (!permissionGranted && source == ImageSource.gallery) {
+        // For gallery, we'll still try as some Android versions handle this differently
+        permissionGranted = true;
+      }
+
+      if (!permissionGranted && source == ImageSource.camera) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Please grant camera permission in settings'.tr),
+            backgroundColor: AppTheme.errorColor,
+            duration: const Duration(seconds: 4),
+            behavior: SnackBarBehavior.fixed,
+          ),
+        );
+        return;
+      }
+
+      final XFile? image = await _picker.pickImage(
+        source: source,
+        imageQuality: 85,
+        maxWidth: 1920,
+        maxHeight: 1920,
+      );
+
+      if (image != null) {
+        setState(() {
+          _selectedImage = File(image.path);
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to pick image. Please try again.'.tr),
+          backgroundColor: AppTheme.errorColor,
+          duration: const Duration(seconds: 3),
+          behavior: SnackBarBehavior.fixed,
+        ),
+      );
+    }
+  }
+
+  Future<void> _submitCarReport() async {
+    // if (!_formKey.currentState!.validate()) {
+    //   return;
+    // }
 
     setState(() {
       _isLoading = true;
     });
 
     try {
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
-
-      // Show success message
-      Get.snackbar(
-        'SUCCESS'.tr,
-        'CAR_REPORT_SUCCESS'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppTheme.secondaryColor,
-        colorText: AppTheme.sudanWhite,
-        icon: const Icon(Icons.check_circle, color: AppTheme.sudanWhite),
+      // Create car report
+      await CarApiService.createCar(
+        plateNumber: _plateNumberController.text.trim(),
+        chassisNumber: _chassisNumberController.text.trim(),
+        brand: _brandController.text.trim(),
+        model: _modelController.text.trim(),
+        description: _conditionDescriptionController.text.trim(),
+        location: _locationController.text.trim(),
+        latitude: _selectedLatitude!.toString(),
+        longitude: _selectedLongitude!.toString(),
+        imageFile: _selectedImage,
       );
 
-      // Clear form
-      _clearForm();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.check_circle, color: AppTheme.sudanWhite),
+              const SizedBox(width: 8),
+              Expanded(child: Text('CAR_REPORT_SUCCESS'.tr)),
+            ],
+          ),
+          backgroundColor: AppTheme.secondaryColor,
+          behavior: SnackBarBehavior.fixed,
+        ),
+      );
 
-      // Navigate back
+      _clearForm();
       Get.back();
     } catch (e) {
-      // Show error message
-      Get.snackbar(
-        'ERROR'.tr,
-        'CAR_REPORT_ERROR'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppTheme.errorColor,
-        colorText: AppTheme.sudanWhite,
-        icon: const Icon(Icons.error, color: AppTheme.sudanWhite),
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.error, color: AppTheme.sudanWhite),
+              const SizedBox(width: 8),
+              Expanded(child: Text('CAR_REPORT_ERROR'.tr)),
+            ],
+          ),
+          backgroundColor: AppTheme.errorColor,
+          behavior: SnackBarBehavior.fixed,
+        ),
       );
     } finally {
       setState(() {
@@ -401,6 +629,8 @@ class _AddCarViewState extends State<AddCarView> {
     _colorController.clear();
     _locationController.clear();
     _conditionDescriptionController.clear();
-    _selectedCondition = 'abandoned';
+    _selectedImage = null;
+    _selectedLatitude = null;
+    _selectedLongitude = null;
   }
 }

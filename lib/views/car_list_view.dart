@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:legate_my_car/views/add_car_view.dart';
+import 'package:legate_my_car/views/car_single_view.dart';
 import 'package:legate_my_car/views/search_Widget.dart';
 import '../viewmodels/car_viewmodel.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -9,7 +11,7 @@ import '../models/car_model.dart';
 class _AppConstants {
   static const double cardBorderRadius = 12.0;
   static const double gridSpacing = 12.0;
-  static const double cardAspectRatio = 0.8;
+  static const double cardAspectRatio = 0.75;
   static const int gridCrossAxisCount = 2;
   static const double paginationTriggerDistance = 200.0;
   static const double headerPadding = 20.0;
@@ -47,7 +49,6 @@ class _CarListViewState extends State<CarListView> {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent -
             _AppConstants.paginationTriggerDistance) {
-      // Load next page when user is near bottom
       if (viewModel.hasMorePages && !viewModel.isLoading) {
         viewModel.loadNextPage();
       }
@@ -55,51 +56,58 @@ class _CarListViewState extends State<CarListView> {
   }
 
   void _onSearchChanged() {
-    setState(() {
-      // This will trigger a rebuild to show/hide the clear button
-    });
+    // setState(() {
+    //   // This will trigger a rebuild to show/hide the clear button
+    // });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.grey.shade200,
       body: SafeArea(
         child: Column(
           children: [
-            // Header
             _buildHeader(),
-            // Content
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: SearchWidget(
+                searchController: _searchController,
+                viewModel: viewModel,
+              ),
+            ),
             Expanded(
               child: Obx(
                 () => viewModel.isLoading && viewModel.cars.isEmpty
-                    ? Center(
-                        child: CircularProgressIndicator(color: Colors.white),
-                      )
+                    ? const Center(child: CircularProgressIndicator())
                     : viewModel.cars.isEmpty
-                    ? Center(
-                        child: Text(
-                          'No cars found',
-                          style: TextStyle(color: Colors.white, fontSize: 16),
-                        ),
+                    ? Column(
+                        children: [
+                          SizedBox(
+                            height: MediaQuery.of(context).size.height * 0.3,
+                          ),
+                          Visibility(
+                            visible: viewModel.searchQuery.isNotEmpty,
+                            replacement: const SizedBox.shrink(),
+                            child: Text(
+                              "NO_CARS_FOUND".tr,
+                              style: TextStyle(fontSize: 16),
+                            ),
+                          ),
+                        ],
                       )
                     : RefreshIndicator(
                         onRefresh: () async {
                           await viewModel.refresh();
                         },
                         color: Colors.white,
-                        backgroundColor: Colors.grey[800],
                         child: SingleChildScrollView(
                           controller: _scrollController,
+                          physics: const AlwaysScrollableScrollPhysics(),
                           padding: EdgeInsets.symmetric(horizontal: 16),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Search Widget
-                              SearchWidget(
-                                searchController: _searchController,
-                                viewModel: viewModel,
-                              ),
                               // Cars Grid
                               _buildCarsGrid(),
                               // Pagination indicators
@@ -113,13 +121,13 @@ class _CarListViewState extends State<CarListView> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Color(0xFF009A49),
-        child: Icon(Icons.add, color: Colors.white),
-        onPressed: () {
-          // Navigate to add car screen
-        },
-      ),
+      // floatingActionButton: FloatingActionButton(
+      //   backgroundColor: Color(0xFF009A49),
+      //   child: Icon(Icons.add, color: Colors.white),
+      //   onPressed: () {
+      //     // Navigate to add car screen
+      //   },
+      // ),
     );
   }
 
@@ -138,15 +146,79 @@ class _CarListViewState extends State<CarListView> {
               SvgPicture.asset('assets/images/logo.svg', width: 40, height: 40),
               Text(
                 "APP_TITLE".tr,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  // color: Colors.white,
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
+                  fontFamily: 'Tajawal',
                 ),
               ),
             ],
           ),
-          const Icon(Icons.more_vert, color: Colors.white),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert),
+            onSelected: (String value) {
+              // Handle menu item selection
+              switch (value) {
+                case 'my_account':
+                  // Navigate to my account page
+                  break;
+                case 'my_request':
+                  // Navigate to my request page
+                  break;
+                case 'upload_car':
+                  Get.to(
+                    () => AddCarView(),
+                  )?.then((_) => viewModel.loadCars(page: 1));
+                  break;
+                case 'about_app':
+                  // Show about app dialog
+                  break;
+              }
+            },
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+              PopupMenuItem<String>(
+                value: 'my_account',
+                child: Row(
+                  children: [
+                    const Icon(Icons.person, color: Colors.grey),
+                    const SizedBox(width: 10),
+                    Text('MY_ACCOUNT'.tr),
+                  ],
+                ),
+              ),
+              PopupMenuItem<String>(
+                value: 'my_request',
+                child: Row(
+                  children: [
+                    const Icon(Icons.request_page, color: Colors.grey),
+                    const SizedBox(width: 10),
+                    Text('MY_REQUEST'.tr),
+                  ],
+                ),
+              ),
+              PopupMenuItem<String>(
+                value: 'upload_car',
+                child: Row(
+                  children: [
+                    const Icon(Icons.add_circle, color: Colors.grey),
+                    const SizedBox(width: 10),
+                    Text('UPLOAD_CAR'.tr),
+                  ],
+                ),
+              ),
+              PopupMenuItem<String>(
+                value: 'about_app',
+                child: Row(
+                  children: [
+                    const Icon(Icons.info, color: Colors.grey),
+                    const SizedBox(width: 10),
+                    Text('ABOUT_APP'.tr),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );
@@ -177,21 +249,7 @@ class _CarListViewState extends State<CarListView> {
         if (viewModel.isLoading && viewModel.cars.isNotEmpty)
           Container(
             padding: EdgeInsets.all(20),
-            child: Center(
-              child: CircularProgressIndicator(color: Colors.white),
-            ),
-          ),
-
-        // End of list indicator
-        if (!viewModel.hasMorePages && viewModel.cars.isNotEmpty)
-          Container(
-            padding: EdgeInsets.all(20),
-            child: Center(
-              child: Text(
-                'No more cars to load',
-                style: TextStyle(color: Colors.grey[400], fontSize: 14),
-              ),
-            ),
+            child: const Center(child: CircularProgressIndicator()),
           ),
 
         const SizedBox(height: 20),
@@ -200,131 +258,101 @@ class _CarListViewState extends State<CarListView> {
   }
 
   Widget _buildCarCard(CarModel vehicle, int index) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.grey[900],
-        borderRadius: BorderRadius.circular(_AppConstants.cardBorderRadius),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Car Image
-          Expanded(
-            flex: 3,
-            child: Stack(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-                  child: CachedNetworkImage(
-                    imageUrl: vehicle.imagePath ?? '',
-                    width: double.infinity,
-                    height: double.infinity,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => Container(
-                      color: Colors.grey[800],
-                      child: Center(
-                        child: CircularProgressIndicator(color: Colors.white),
-                      ),
-                    ),
-                    errorWidget: (context, url, error) => Container(
-                      color: Colors.grey[800],
-                      child: Icon(
-                        Icons.car_rental,
-                        color: Colors.grey[400],
-                        size: 40,
-                      ),
-                    ),
-                  ),
-                ),
-                // New badge
-                if (index == 1 || index == 3)
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.red,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        'New',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-
-          // Car Details
-          Expanded(
-            flex: 2,
-            child: Padding(
-              padding: EdgeInsets.all(8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => CarSingleView(car: vehicle)),
+        );
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(_AppConstants.cardBorderRadius),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Car Image
+            Expanded(
+              flex: 4,
+              child: Stack(
                 children: [
-                  // Flag and Brand
-                  Row(
-                    children: [
-                      Container(
-                        width: 16,
-                        height: 12,
-                        decoration: BoxDecoration(
-                          color: Colors.red,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                        child: Center(
-                          child: Container(
-                            width: 4,
-                            height: 4,
-                            decoration: BoxDecoration(
-                              color: Colors.green,
-                              shape: BoxShape.circle,
+                  ClipRRect(
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(12),
+                    ),
+                    child:
+                        vehicle.fullImageUrl != null &&
+                            vehicle.fullImageUrl!.isNotEmpty
+                        ? CachedNetworkImage(
+                            imageUrl: vehicle.fullImageUrl!,
+                            width: double.infinity,
+                            height: double.infinity,
+                            fit: BoxFit.cover,
+                            placeholder: (context, url) => Container(
+                              color: Colors.grey[800],
+                              child: const Center(
+                                child: CircularProgressIndicator(),
+                              ),
+                            ),
+                            errorWidget: (context, url, error) => Container(
+                              color: Colors.grey[800],
+                              child: Icon(
+                                Icons.car_rental,
+                                color: Colors.grey[400],
+                                size: 40,
+                              ),
+                            ),
+                          )
+                        : Container(
+                            width: double.infinity,
+                            height: double.infinity,
+                            color: Colors.grey[800],
+                            child: Icon(
+                              Icons.car_crash_outlined,
+                              color: Colors.grey[400],
+                              size: 80,
                             ),
                           ),
-                        ),
-                      ),
-                      SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          vehicle.brand,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    vehicle.model,
-                    style: TextStyle(color: Colors.grey[400], fontSize: 11),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  SizedBox(height: 2),
-                  Text(
-                    'Make a model',
-                    style: TextStyle(color: Colors.grey[500], fontSize: 10),
-                  ),
-                  Spacer(),
-                  Text(
-                    '2021',
-                    style: TextStyle(color: Colors.grey[400], fontSize: 10),
                   ),
                 ],
               ),
             ),
-          ),
-        ],
+
+            // Car Details
+            Expanded(
+              flex: 2,
+              child: Padding(
+                padding: EdgeInsets.all(8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      vehicle.chassisNumber ?? " - ",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      vehicle.plateNumber ?? " - ",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      "${vehicle.brand ?? " "} - ${vehicle.model ?? ""}",
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

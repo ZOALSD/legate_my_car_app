@@ -1,14 +1,15 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'dart:io';
+import 'package:dio/dio.dart';
 import '../models/car_model.dart';
 import '../models/api_response_model.dart';
 import '../config/env_config.dart';
+import 'auth_service.dart';
 
 class CarApiService {
   static String get baseUrl => EnvConfig.apiBaseUrl;
 
   // Get all cars with pagination
-  static Future<CarsApiResponse> getAllCars({
+  static Future<CarsApiResponse> getCars({
     int page = 1,
     int perPage = 10,
     String? status,
@@ -20,28 +21,22 @@ class CarApiService {
         'per_page': perPage.toString(),
       };
 
-      if (status != null && status.isNotEmpty && status != 'all') {
-        queryParams['status'] = status;
-      }
+      final dio = Dio(
+        BaseOptions(
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+        ),
+      );
 
-      if (search != null && search.isNotEmpty) {
-        queryParams['search'] = search;
-      }
-
-      final uri = Uri.parse(
+      final response = await dio.get(
         '$baseUrl/api/v1/cars',
-      ).replace(queryParameters: queryParams);
-
-      final response = await http.get(
-        uri,
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
+        queryParameters: queryParams,
       );
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> jsonData = json.decode(response.body);
+        final Map<String, dynamic> jsonData = response.data;
         return CarsApiResponse.fromJson(jsonData);
       } else {
         throw Exception('Failed to load cars: ${response.statusCode}');
@@ -51,43 +46,22 @@ class CarApiService {
     }
   }
 
-  // Get cars by status with pagination
-  static Future<CarsApiResponse> getCarsByStatus(
-    String status, {
-    int page = 1,
-    int perPage = 10,
-  }) async {
-    return getAllCars(page: page, perPage: perPage, status: status);
-  }
-
-  // Search cars with pagination
-  static Future<CarsApiResponse> searchCars(
-    String query, {
-    int page = 1,
-    int perPage = 10,
-    String? status,
-  }) async {
-    return getAllCars(
-      page: page,
-      perPage: perPage,
-      status: status,
-      search: query,
-    );
-  }
-
   // Get car by ID
   static Future<CarModel> getCarById(int id) async {
     try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/api/v1/cars/$id'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
+      final dio = Dio(
+        BaseOptions(
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+        ),
       );
 
+      final response = await dio.get('$baseUrl/api/v1/cars/$id');
+
       if (response.statusCode == 200) {
-        final Map<String, dynamic> jsonData = json.decode(response.body);
+        final Map<String, dynamic> jsonData = response.data;
         final apiResponse = ApiResponseModel.fromJson(
           jsonData,
           (data) => CarModel.fromJson(data),
@@ -101,20 +75,50 @@ class CarApiService {
     }
   }
 
-  // Create new car report
-  static Future<CarModel> createCar(CarModel car) async {
+  // Create new car report with multipart form data
+  static Future<CarModel> createCar({
+    required String? plateNumber,
+    required String? chassisNumber,
+    required String? brand,
+    required String? model,
+    required String? description,
+    required String? location,
+    required String? latitude,
+    required String? longitude,
+    File? imageFile,
+  }) async {
     try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/api/v1/cars'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: json.encode(car.toJson()),
+      final authHeaders = await AuthService.getAuthHeaders();
+
+      final dio = Dio(
+        BaseOptions(
+          baseUrl: 'https://${EnvConfig.defaultApiUrl}',
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': authHeaders['Authorization'],
+          },
+        ),
       );
 
+      // Create FormData for multipart request
+      final formData = FormData.fromMap({
+        'plate_number': plateNumber,
+        'chassis_number': chassisNumber,
+        'brand': brand,
+        'model': model,
+        'description': description,
+        'location': location,
+        'latitude': latitude,
+        'longitude': longitude,
+        'status': 'lost', // Default status
+        if (imageFile != null)
+          'image_path': await MultipartFile.fromFile(imageFile.path),
+      });
+
+      final response = await dio.post('$baseUrl/cars', data: formData);
+
       if (response.statusCode == 201) {
-        final Map<String, dynamic> jsonData = json.decode(response.body);
+        final Map<String, dynamic> jsonData = response.data;
         final apiResponse = ApiResponseModel.fromJson(
           jsonData,
           (data) => CarModel.fromJson(data),
@@ -131,17 +135,22 @@ class CarApiService {
   // Update car report
   static Future<CarModel> updateCar(int id, CarModel car) async {
     try {
-      final response = await http.put(
-        Uri.parse('$baseUrl/api/v1/cars/$id'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: json.encode(car.toJson()),
+      final dio = Dio(
+        BaseOptions(
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+        ),
+      );
+
+      final response = await dio.put(
+        '$baseUrl/api/v1/cars/$id',
+        data: car.toJson(),
       );
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> jsonData = json.decode(response.body);
+        final Map<String, dynamic> jsonData = response.data;
         final apiResponse = ApiResponseModel.fromJson(
           jsonData,
           (data) => CarModel.fromJson(data),
@@ -158,39 +167,20 @@ class CarApiService {
   // Delete car report
   static Future<bool> deleteCar(int id) async {
     try {
-      final response = await http.delete(
-        Uri.parse('$baseUrl/api/v1/cars/$id'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
+      final dio = Dio(
+        BaseOptions(
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+        ),
       );
+
+      final response = await dio.delete('$baseUrl/api/v1/cars/$id');
 
       return response.statusCode == 200 || response.statusCode == 204;
     } catch (e) {
       throw Exception('Error deleting car: $e');
-    }
-  }
-
-  // Get statistics
-  static Future<Map<String, int>> getCarStatistics() async {
-    try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/api/v1/cars/statistics'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> jsonData = json.decode(response.body);
-        return Map<String, int>.from(jsonData['data'] ?? {});
-      } else {
-        throw Exception('Failed to load statistics: ${response.statusCode}');
-      }
-    } catch (e) {
-      throw Exception('Error fetching statistics: $e');
     }
   }
 }

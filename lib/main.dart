@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get.dart';
+import 'package:legate_my_car/intro_view.dart';
 import 'theme/app_theme.dart';
-import 'views/car_list_view.dart';
 import 'translations/app_translations.dart';
 import 'controllers/language_controller.dart';
 import 'dart:ui' as ui;
@@ -32,17 +32,18 @@ class MyApp extends StatelessWidget {
         GlobalCupertinoLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
       ],
+
       // RTL support for Arabic
-      builder: (context, child) {
-        final languageController = Get.find<LanguageController>();
-        return Directionality(
-          textDirection: languageController.isArabic
-              ? ui.TextDirection.rtl
-              : ui.TextDirection.ltr,
-          child: child!,
-        );
-      },
-      home: const CarListView(),
+      // builder: (context, child) {
+      //   final languageController = Get.find<LanguageController>();
+      //   return Directionality(
+      //     textDirection: languageController.isArabic
+      //         ? ui.TextDirection.rtl
+      //         : ui.TextDirection.ltr,
+      //     child: child!,
+      //   );
+      // },
+      home: const IntroView(),
     );
   }
 }
