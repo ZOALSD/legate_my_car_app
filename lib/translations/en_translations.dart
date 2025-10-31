@@ -149,5 +149,15 @@ class EnTranslations {
     'MY_REQUEST': 'My Request',
     'UPLOAD_CAR': 'Upload Car',
     'ABOUT_APP': 'About App',
+
+    // Authentication
+    'SIGN_IN': 'Sign In',
+    'SIGN_IN_WITH_GOOGLE': 'Sign in with Google',
+    'SIGNING_IN': 'Signing in...',
+    'SIGN_IN_SUCCESS': 'Signed in successfully',
+    'SIGN_IN_ERROR': 'Failed to sign in',
+    'SIGN_IN_CANCELED': 'Sign in canceled',
+    'CONTINUE_AS_GUEST': 'Continue as Guest',
+    'GOOGLE_SIGN_IN_ERROR': 'Google sign-in error',
   };
 }

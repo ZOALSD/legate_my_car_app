@@ -150,5 +150,15 @@ class ArTranslations {
     'MY_REQUEST': 'طلباتي',
     'UPLOAD_CAR': 'رفع سيارة',
     'ABOUT_APP': 'حول التطبيق',
+
+    // Authentication
+    'SIGN_IN': 'تسجيل الدخول',
+    'SIGN_IN_WITH_GOOGLE': 'تسجيل الدخول بحساب Google',
+    'SIGNING_IN': 'جاري تسجيل الدخول...',
+    'SIGN_IN_SUCCESS': 'تم تسجيل الدخول بنجاح',
+    'SIGN_IN_ERROR': 'فشل تسجيل الدخول',
+    'SIGN_IN_CANCELED': 'تم إلغاء تسجيل الدخول',
+    'CONTINUE_AS_GUEST': 'متابعة كضيف',
+    'GOOGLE_SIGN_IN_ERROR': 'خطأ في تسجيل الدخول ب Google',
   };
 }

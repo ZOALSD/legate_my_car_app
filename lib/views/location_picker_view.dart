@@ -369,7 +369,7 @@ class _LocationPickerViewState extends State<LocationPickerView> {
                           TileLayer(
                             urlTemplate:
                                 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                            userAgentPackageName: 'com.example.legate_my_car',
+                            userAgentPackageName: 'com.laqeetarabeety.managers',
                             maxZoom: 18,
                             errorTileCallback: (tile, error, __) {
                               if (!mounted) return;
