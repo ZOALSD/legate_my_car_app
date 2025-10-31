@@ -4,6 +4,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:get/get_utils/get_utils.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/car_model.dart';
+import 'add_car_view.dart';
+import '../theme/app_theme.dart';
 
 class CarSingleView extends StatelessWidget {
   final CarModel car;
@@ -44,23 +46,28 @@ class CarSingleView extends StatelessWidget {
       ),
       actions: [
         IconButton(
+          icon: const Icon(Icons.edit, color: AppTheme.primaryColor),
+          onPressed: () => _editCar(context),
+          tooltip: 'EDIT_CAR'.tr,
+        ),
+        IconButton(
           icon: const Icon(Icons.share, color: Colors.black),
           onPressed: () => _shareCar(context),
+          tooltip: 'SHARE_CAR'.tr,
         ),
       ],
     );
   }
 
   Widget _buildCarImage() {
-    final imageUrl = car.fullImageUrl;
     return SizedBox(
       height: 300,
       width: double.infinity,
       child: Stack(
         children: [
-          imageUrl != null && imageUrl.isNotEmpty
+          car.imageUrl != null && car.imageUrl!.isNotEmpty
               ? CachedNetworkImage(
-                  imageUrl: imageUrl,
+                  imageUrl: car.imageUrl!,
                   width: double.infinity,
                   height: double.infinity,
                   fit: BoxFit.cover,
@@ -193,6 +200,18 @@ class CarSingleView extends StatelessWidget {
 
   void _shareCar(BuildContext context) {
     // TODO: Implement share functionality
+  }
+
+  void _editCar(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => AddCarView(car: car)),
+    ).then((result) {
+      // Refresh the view if car was updated
+      if (result == true && context.mounted) {
+        Navigator.pop(context, true);
+      }
+    });
   }
 
   Future<void> _shareLocation(BuildContext context) async {

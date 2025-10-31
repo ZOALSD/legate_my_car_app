@@ -1,15 +1,14 @@
 class CarModel {
-  final String id;
+  final String? id;
   final String? plateNumber;
   final String? chassisNumber;
   final String? brand;
   final String? model;
   final String? color;
   final String? description;
-  final String? imagePath;
   final String? imageUrl;
-  final int userId;
-  final String status;
+  final int? userId;
+  final String? status;
   final DateTime? lostDate;
   final String? location;
   final String? latitude;
@@ -17,30 +16,29 @@ class CarModel {
   final String? phoneNumber;
   final int? carNumber;
   final String? contactInfo;
-  final DateTime createdAt;
-  final DateTime updatedAt;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
 
   CarModel({
-    required this.id,
+    this.id,
     required this.plateNumber,
     required this.chassisNumber,
     required this.brand,
     required this.model,
-    required this.color,
     required this.description,
-    this.imagePath,
+    this.color,
     this.imageUrl,
-    required this.userId,
-    required this.status,
-    required this.lostDate,
-    required this.location,
+    this.userId,
+    this.status,
+    this.lostDate,
+    this.location,
     this.latitude,
     this.longitude,
     this.phoneNumber,
     this.carNumber,
     this.contactInfo,
-    required this.createdAt,
-    required this.updatedAt,
+    this.createdAt,
+    this.updatedAt,
   });
 
   factory CarModel.fromJson(Map<String, dynamic> json) {
@@ -52,7 +50,7 @@ class CarModel {
       model: json['model'] ?? '',
       color: json['color'] ?? '',
       description: json['description'] ?? '',
-      imagePath: json['image_path'],
+      imageUrl: json['image_url'],
       userId: json['user_id'] ?? 0,
       status: json['status'] ?? '',
       lostDate: json['lost_date'] != null
@@ -82,19 +80,10 @@ class CarModel {
       'model': model,
       'color': color,
       'description': description,
-      'image_path': imagePath,
-      'image_url': imageUrl,
-      'user_id': userId,
-      'status': status,
-      'lost_date': lostDate?.toIso8601String(),
+      'status': "lost",
       'location': location,
       'latitude': latitude,
       'longitude': longitude,
-      'phone_number': phoneNumber,
-      'car_number': carNumber,
-      'contact_info': contactInfo,
-      'created_at': createdAt.toIso8601String(),
-      'updated_at': updatedAt.toIso8601String(),
     };
   }
 
@@ -105,26 +94,7 @@ class CarModel {
   }
 
   String get formattedCreatedDate {
-    return '${createdAt.day}/${createdAt.month}/${createdAt.year}';
-  }
-
-  /// Get full image URL
-  String? get fullImageUrl {
-    // First try imageUrl if available
-    if (imageUrl != null && imageUrl!.isNotEmpty) {
-      return imageUrl;
-    }
-
-    // Fallback to imagePath
-    if (imagePath == null || imagePath!.isEmpty) {
-      return null;
-    }
-    // If already a full URL, return as is
-    if (imagePath!.startsWith('http://') || imagePath!.startsWith('https://')) {
-      return imagePath;
-    }
-    // Otherwise, prepend the base URL
-    return 'https://api.laqeetarabeety.com/storage/$imagePath';
+    return '${createdAt?.day}/${createdAt?.month}/${createdAt?.year}';
   }
 
   @override

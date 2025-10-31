@@ -98,6 +98,7 @@ class ArTranslations {
 
     // Add Car Section
     'ADD_CAR_TITLE': 'إضافة سيارة وجدتها',
+    'UPDATE_CAR_TITLE': 'تحديث السيارة',
     'ADD_CAR_DESCRIPTION': 'الإبلاغ عن سيارة وجدتها في الشارع',
     'CAR_IMAGES': 'صور السيارة',
     'UPLOAD_IMAGES': 'رفع الصور',
@@ -111,8 +112,11 @@ class ArTranslations {
     'CONDITION_DESCRIPTION': 'وصف الحالة',
     'ENTER_CONDITION_DETAILS': 'أدخل تفاصيل الحالة...',
     'SUBMIT_CAR_REPORT': 'إرسال تقرير السيارة',
+    'UPDATE_CAR_REPORT': 'تحديث تقرير السيارة',
     'CAR_REPORT_SUCCESS': 'تم إرسال تقرير السيارة بنجاح',
     'CAR_REPORT_ERROR': 'فشل في إرسال تقرير السيارة',
+    'CAR_UPDATE_SUCCESS': 'تم تحديث تقرير السيارة بنجاح',
+    'CAR_UPDATE_ERROR': 'فشل في تحديث تقرير السيارة',
 
     // Volunteer Features
     'VOLUNTEER_MODE': 'وضع المتطوع',

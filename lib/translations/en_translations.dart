@@ -97,6 +97,7 @@ class EnTranslations {
 
     // Add Car Section
     'ADD_CAR_TITLE': 'Add Found Car',
+    'UPDATE_CAR_TITLE': 'Update Car',
     'ADD_CAR_DESCRIPTION': 'Report a car you found on the street',
     'CAR_IMAGES': 'Car Images',
     'UPLOAD_IMAGES': 'Upload Images',
@@ -110,8 +111,11 @@ class EnTranslations {
     'CONDITION_DESCRIPTION': 'Condition Description',
     'ENTER_CONDITION_DETAILS': 'Enter condition details...',
     'SUBMIT_CAR_REPORT': 'Submit Car Report',
+    'UPDATE_CAR_REPORT': 'Update Car Report',
     'CAR_REPORT_SUCCESS': 'Car report submitted successfully',
     'CAR_REPORT_ERROR': 'Failed to submit car report',
+    'CAR_UPDATE_SUCCESS': 'Car report updated successfully',
+    'CAR_UPDATE_ERROR': 'Failed to update car report',
 
     // Volunteer Features
     'VOLUNTEER_MODE': 'Volunteer Mode',
