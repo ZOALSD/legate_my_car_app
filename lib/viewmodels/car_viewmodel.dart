@@ -137,4 +137,19 @@ class CarViewModel extends GetxController {
       return null;
     }
   }
+
+  // Add car to list (for create action)
+  void addCar(CarModel car) {
+    // Add to the beginning of the list since it's the newest
+    _cars.insert(0, car);
+    _totalCars.value = _totalCars.value + 1;
+  }
+
+  // Update car in list (for update action)
+  void updateCar(CarModel updatedCar) {
+    final index = _cars.indexWhere((car) => car.id == updatedCar.id);
+    if (index != -1) {
+      _cars[index] = updatedCar;
+    }
+  }
 }

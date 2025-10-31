@@ -169,9 +169,20 @@ class _CarListViewState extends State<CarListView> {
                   // Navigate to my request page
                   break;
                 case 'upload_car':
-                  Get.to(
-                    () => CarFormView(),
-                  )?.then((_) => viewModel.loadCars(page: 1));
+                  Get.to(() => CarFormView())?.then((result) {
+                    if (result != null && result is Map) {
+                      final car = result['car'] as CarModel?;
+                      final action = result['action'] as String?;
+
+                      if (car != null && action != null) {
+                        if (action == 'create') {
+                          viewModel.addCar(car);
+                        } else if (action == 'update') {
+                          viewModel.updateCar(car);
+                        }
+                      }
+                    }
+                  });
                   break;
                 case 'about_app':
                   // Show about app dialog
@@ -265,7 +276,21 @@ class _CarListViewState extends State<CarListView> {
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => CarSingleView(car: vehicle)),
-        );
+        ).then((result) {
+          // Handle result from CarSingleView (when car is edited there)
+          if (result != null && result is Map) {
+            final car = result['car'] as CarModel?;
+            final action = result['action'] as String?;
+
+            if (car != null && action != null) {
+              if (action == 'update') {
+                viewModel.updateCar(car);
+              } else if (action == 'create') {
+                viewModel.addCar(car);
+              }
+            }
+          }
+        });
       },
       child: Container(
         decoration: BoxDecoration(

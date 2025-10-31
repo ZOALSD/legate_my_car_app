@@ -659,8 +659,9 @@ class _CarFormViewState extends State<CarFormView> {
     });
 
     try {
+      CarModel? resultCar;
       if (_isEditMode) {
-        await CarApiService.updateCar(car: car);
+        resultCar = await CarApiService.updateCar(car: car);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(
@@ -675,7 +676,10 @@ class _CarFormViewState extends State<CarFormView> {
           ),
         );
       } else {
-        await CarApiService.createCar(car: car, imageFile: _selectedImage);
+        resultCar = await CarApiService.createCar(
+          car: car,
+          imageFile: _selectedImage,
+        );
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -693,7 +697,10 @@ class _CarFormViewState extends State<CarFormView> {
       }
 
       _clearForm();
-      Get.back(result: _isEditMode ? true : null);
+      // Return the car model with action type
+      Get.back(
+        result: {'car': resultCar, 'action': _isEditMode ? 'update' : 'create'},
+      );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

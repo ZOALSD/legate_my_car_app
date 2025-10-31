@@ -14,7 +14,7 @@ class ArTranslations {
 
     // Car List
     'LOST_CARS_TITLE': 'السيارات المفقودة في السودان',
-    'SEARCH_HINT': 'ابحث بآخر 5 أرقام من الشاسي',
+    'SEARCH_HINT': 'ابحث برقم الهيكل او رقم اللوحة او الموديل ...',
     'NO_CARS_FOUND': 'لم يتم العثور على سيارات تطابق بحثك',
     'NO_CARS_AVAILABLE': 'لا توجد سيارات متاحة',
     'TRY_ADJUSTING_SEARCH': 'حاول تعديل مصطلحات البحث',

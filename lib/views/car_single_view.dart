@@ -207,9 +207,9 @@ class CarSingleView extends StatelessWidget {
       context,
       MaterialPageRoute(builder: (context) => CarFormView(car: car)),
     ).then((result) {
-      // Refresh the view if car was updated
-      if (result == true && context.mounted) {
-        Navigator.pop(context, true);
+      // Pass the result back to list view if car was updated/created
+      if (result != null && context.mounted) {
+        Navigator.pop(context, result);
       }
     });
   }

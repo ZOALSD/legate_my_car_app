@@ -13,7 +13,7 @@ class EnTranslations {
 
     // Car List
     'LOST_CARS_TITLE': 'Lost Cars in Sudan',
-    'SEARCH_HINT': 'Search by the last 5 digits of the chassis',
+    'SEARCH_HINT': 'Search by chassis or plate number or model ...',
     'NO_CARS_FOUND': 'No cars found matching your search',
     'NO_CARS_AVAILABLE': 'No cars available',
     'TRY_ADJUSTING_SEARCH': 'Try adjusting your search terms',
