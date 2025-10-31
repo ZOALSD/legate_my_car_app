@@ -7,6 +7,7 @@ import 'package:legate_my_car/views/search_Widget.dart';
 import '../viewmodels/car_viewmodel.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../models/car_model.dart';
+import 'dart:ui' as ui;
 
 class _AppConstants {
   static const double cardBorderRadius = 12.0;
@@ -283,10 +284,9 @@ class _CarListViewState extends State<CarListView> {
                       top: Radius.circular(12),
                     ),
                     child:
-                        vehicle.fullImageUrl != null &&
-                            vehicle.fullImageUrl!.isNotEmpty
+                        vehicle.imageUrl != null && vehicle.imageUrl!.isNotEmpty
                         ? CachedNetworkImage(
-                            imageUrl: vehicle.fullImageUrl!,
+                            imageUrl: vehicle.imageUrl!,
                             width: double.infinity,
                             height: double.infinity,
                             fit: BoxFit.cover,
@@ -328,11 +328,15 @@ class _CarListViewState extends State<CarListView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      vehicle.chassisNumber ?? " - ",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                    Directionality(
+                      textDirection: ui.TextDirection.ltr,
+                      child: Text(
+                        "${vehicle.carNumber ?? " "} - ${vehicle.chassisNumber ?? " - "}",
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     Text(

@@ -5,7 +5,7 @@ import 'package:legate_my_car/intro_view.dart';
 import 'theme/app_theme.dart';
 import 'translations/app_translations.dart';
 import 'controllers/language_controller.dart';
-import 'dart:ui' as ui;
+import 'config/env_config.dart';
 
 void main() {
   runApp(const MyApp());
@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       title: 'لقيت عربيتي',
       theme: AppTheme.lightTheme,
-      debugShowCheckedModeBanner: false,
+      debugShowCheckedModeBanner: EnvConfig.showDebugBanner,
       translations: AppTranslations(),
       locale: Get.find<LanguageController>().currentLocale,
       fallbackLocale: const Locale("ar", "SA"),
@@ -32,17 +32,6 @@ class MyApp extends StatelessWidget {
         GlobalCupertinoLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
       ],
-
-      // RTL support for Arabic
-      // builder: (context, child) {
-      //   final languageController = Get.find<LanguageController>();
-      //   return Directionality(
-      //     textDirection: languageController.isArabic
-      //         ? ui.TextDirection.rtl
-      //         : ui.TextDirection.ltr,
-      //     child: child!,
-      //   );
-      // },
       home: const IntroView(),
     );
   }

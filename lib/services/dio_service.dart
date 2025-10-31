@@ -10,9 +10,9 @@ class DioService {
     if (_dio == null) {
       _dio = Dio(
         BaseOptions(
-          baseUrl: 'https://${EnvConfig.defaultApiUrl}',
-          connectTimeout: const Duration(seconds: 10),
-          receiveTimeout: const Duration(seconds: 10),
+          baseUrl: EnvConfig.apiBaseUrl,
+          connectTimeout: const Duration(seconds: 30),
+          receiveTimeout: const Duration(seconds: 30),
           headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',

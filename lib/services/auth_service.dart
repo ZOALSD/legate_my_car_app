@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import '../config/env_config.dart';
 import '../utils/connection_helper.dart';
 import '../models/login_model.dart';
 import 'dio_service.dart';
@@ -24,7 +23,7 @@ class AuthService {
         return false;
       }
 
-      final endpoint = '${EnvConfig.apiBaseUrl}/guest/info';
+      final endpoint = '/guest/info';
       final dio = DioService.instance;
       final response = await dio.get(endpoint);
 
@@ -55,7 +54,7 @@ class AuthService {
         return false;
       }
 
-      final endpoint = '${EnvConfig.apiBaseUrl}/guest/login';
+      final endpoint = '/guest/login';
 
       final dio = DioService.instance;
       final response = await dio.post(endpoint);
@@ -73,6 +72,7 @@ class AuthService {
 
       return false;
     } catch (e) {
+      print('❌ Error during login: $e');
       return false;
     }
   }
@@ -92,19 +92,14 @@ class AuthService {
   }
 
   /// Check if user is authenticated (with optional validation)
-  static Future<bool> isAuthenticated({bool validate = false}) async {
+  static Future<bool> isAuthenticated() async {
     final token = await getToken();
 
     if (token == null || token.isEmpty) {
       return false;
     }
 
-    // If validation is requested, check with server
-    if (validate) {
-      return await validateToken();
-    }
-
-    return true;
+    return await validateToken();
   }
 
   /// Logout user (clear token and user info)

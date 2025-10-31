@@ -173,11 +173,18 @@ lib/
 
 ## Environment Setup
 
-Create a `.env` file in the root directory with:
+The app supports multiple environments (staging and production). To switch between environments:
 
-```
-API_BASE_URL=your_api_url_here
-```
+1. Open `lib/config/env_config.dart`
+2. Change the `environment` constant:
+   - For staging: `static const AppEnvironment environment = AppEnvironment.staging;`
+   - For production: `static const AppEnvironment environment = AppEnvironment.production;`
+
+**Current Environments:**
+- **Staging**: `https://staging.laqeetarabeety.com/api/v1`
+- **Production**: `https://api.laqeetarabeety.com/api/v1`
+
+The environment configuration is automatically logged when the app starts for easy debugging.
 
 ## Translation System
 

@@ -3,12 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../theme/app_theme.dart';
 import '../services/car_api_service.dart';
+import '../models/car_model.dart';
 import 'location_picker_view.dart';
 
 class AddCarView extends StatefulWidget {
-  const AddCarView({super.key});
+  final CarModel? car;
+
+  const AddCarView({super.key, this.car});
 
   @override
   State<AddCarView> createState() => _AddCarViewState();
@@ -29,6 +33,33 @@ class _AddCarViewState extends State<AddCarView> {
   final ImagePicker _picker = ImagePicker();
   double? _selectedLatitude;
   double? _selectedLongitude;
+  bool get _isEditMode => widget.car != null;
+
+  @override
+  void initState() {
+    super.initState();
+    if (_isEditMode) {
+      _populateFormFields();
+    }
+  }
+
+  void _populateFormFields() {
+    final car = widget.car!;
+    _plateNumberController.text = car.plateNumber ?? '';
+    _chassisNumberController.text = car.chassisNumber ?? '';
+    _brandController.text = car.brand ?? '';
+    _modelController.text = car.model ?? '';
+    _colorController.text = car.color ?? '';
+    _locationController.text = car.location ?? '';
+    _conditionDescriptionController.text = car.description ?? '';
+    _selectedLatitude = car.latitude != null
+        ? double.tryParse(car.latitude!)
+        : null;
+    _selectedLongitude = car.longitude != null
+        ? double.tryParse(car.longitude!)
+        : null;
+    // Note: _selectedImage remains null for now as we'd need to download the image
+  }
 
   @override
   void dispose() {
@@ -48,7 +79,7 @@ class _AddCarViewState extends State<AddCarView> {
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
         title: Text(
-          'ADD_CAR_TITLE'.tr,
+          _isEditMode ? 'UPDATE_CAR_TITLE'.tr : 'ADD_CAR_TITLE'.tr,
           style: const TextStyle(
             color: AppTheme.sudanWhite,
             fontSize: 20,
@@ -185,7 +216,9 @@ class _AddCarViewState extends State<AddCarView> {
                           ),
                         )
                       : Text(
-                          'SUBMIT_CAR_REPORT'.tr,
+                          _isEditMode
+                              ? 'UPDATE_CAR_REPORT'.tr
+                              : 'SUBMIT_CAR_REPORT'.tr,
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -343,32 +376,8 @@ class _AddCarViewState extends State<AddCarView> {
             ),
           ],
         ),
-        child: _selectedImage == null
-            ? Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.add_a_photo_rounded,
-                    size: 40,
-                    color: AppTheme.primaryColor,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'UPLOAD_IMAGES'.tr,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.textPrimaryColor,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Tap to select a photo',
-                    style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
-                  ),
-                ],
-              )
-            : Stack(
+        child: _selectedImage != null
+            ? Stack(
                 fit: StackFit.expand,
                 children: [
                   ClipRRect(
@@ -393,6 +402,93 @@ class _AddCarViewState extends State<AddCarView> {
                         tooltip: 'Change Image',
                       ),
                     ),
+                  ),
+                ],
+              )
+            : _isEditMode &&
+                  widget.car!.imageUrl != null &&
+                  widget.car!.imageUrl!.isNotEmpty
+            ? Stack(
+                fit: StackFit.expand,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: CachedNetworkImage(
+                      imageUrl: widget.car!.imageUrl!,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => Container(
+                        color: Colors.grey.shade100,
+                        child: const Center(
+                          child: CircularProgressIndicator(
+                            color: AppTheme.primaryColor,
+                          ),
+                        ),
+                      ),
+                      errorWidget: (context, url, error) => Container(
+                        color: Colors.grey.shade100,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.broken_image,
+                              size: 48,
+                              color: Colors.grey.shade400,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Failed to load image',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Positioned(
+                  //   top: 8,
+                  //   right: 8,
+                  //   child: Container(
+                  //     decoration: BoxDecoration(
+                  //       color: Colors.black54,
+                  //       borderRadius: BorderRadius.circular(50),
+                  //     ),
+                  //     child: IconButton(
+                  //       icon: const Icon(
+                  //         Icons.edit,
+                  //         color: Colors.white,
+                  //         size: 22,
+                  //       ),
+                  //       onPressed: () => _showImageSourceDialog(context),
+                  //       tooltip: 'Change Image',
+                  //     ),
+                  //   ),
+                  // ),
+                ],
+              )
+            : Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.add_a_photo_rounded,
+                    size: 40,
+                    color: AppTheme.primaryColor,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'UPLOAD_IMAGES'.tr,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.textPrimaryColor,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Tap to select a photo',
+                    style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
                   ),
                 ],
               ),
@@ -562,44 +658,50 @@ class _AddCarViewState extends State<AddCarView> {
   }
 
   Future<void> _submitCarReport() async {
-    // if (!_formKey.currentState!.validate()) {
-    //   return;
-    // }
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
 
     setState(() {
       _isLoading = true;
     });
 
     try {
-      // Create car report
-      await CarApiService.createCar(
-        plateNumber: _plateNumberController.text.trim(),
-        chassisNumber: _chassisNumberController.text.trim(),
-        brand: _brandController.text.trim(),
-        model: _modelController.text.trim(),
-        description: _conditionDescriptionController.text.trim(),
-        location: _locationController.text.trim(),
-        latitude: _selectedLatitude!.toString(),
-        longitude: _selectedLongitude!.toString(),
-        imageFile: _selectedImage,
-      );
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              const Icon(Icons.check_circle, color: AppTheme.sudanWhite),
-              const SizedBox(width: 8),
-              Expanded(child: Text('CAR_REPORT_SUCCESS'.tr)),
-            ],
+      if (_isEditMode) {
+        await CarApiService.updateCar(car: car);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle, color: AppTheme.sudanWhite),
+                const SizedBox(width: 8),
+                Expanded(child: Text('CAR_UPDATE_SUCCESS'.tr)),
+              ],
+            ),
+            backgroundColor: AppTheme.secondaryColor,
+            behavior: SnackBarBehavior.fixed,
           ),
-          backgroundColor: AppTheme.secondaryColor,
-          behavior: SnackBarBehavior.fixed,
-        ),
-      );
+        );
+      } else {
+        await CarApiService.createCar(car: car, imageFile: _selectedImage);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle, color: AppTheme.sudanWhite),
+                const SizedBox(width: 8),
+                Expanded(child: Text('CAR_REPORT_SUCCESS'.tr)),
+              ],
+            ),
+            backgroundColor: AppTheme.secondaryColor,
+            behavior: SnackBarBehavior.fixed,
+          ),
+        );
+      }
 
       _clearForm();
-      Get.back();
+      Get.back(result: _isEditMode ? true : null);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -607,7 +709,11 @@ class _AddCarViewState extends State<AddCarView> {
             children: [
               const Icon(Icons.error, color: AppTheme.sudanWhite),
               const SizedBox(width: 8),
-              Expanded(child: Text('CAR_REPORT_ERROR'.tr)),
+              Expanded(
+                child: Text(
+                  _isEditMode ? 'CAR_UPDATE_ERROR'.tr : 'CAR_REPORT_ERROR'.tr,
+                ),
+              ),
             ],
           ),
           backgroundColor: AppTheme.errorColor,
@@ -620,6 +726,18 @@ class _AddCarViewState extends State<AddCarView> {
       });
     }
   }
+
+  CarModel get car => CarModel(
+    id: widget.car?.id,
+    plateNumber: _plateNumberController.text.trim(),
+    chassisNumber: _chassisNumberController.text.trim(),
+    brand: _brandController.text.trim(),
+    model: _modelController.text.trim(),
+    description: _conditionDescriptionController.text.trim(),
+    location: _locationController.text.trim(),
+    latitude: _selectedLatitude!.toString(),
+    longitude: _selectedLongitude!.toString(),
+  );
 
   void _clearForm() {
     _plateNumberController.clear();

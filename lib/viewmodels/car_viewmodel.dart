@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
+import 'package:legate_my_car/services/car_api_service.dart';
 import '../models/car_model.dart';
-import '../services/api_service.dart';
 
 class CarViewModel extends GetxController {
   static CarViewModel get instance {
@@ -53,7 +53,7 @@ class CarViewModel extends GetxController {
       _isLoading.value = true;
       _errorMessage.value = '';
 
-      final response = await ApiService.getAllCars(
+      final response = await CarApiService.getAllCars(
         page: page,
         perPage: 10,
         chassisNumber: chassisNumber,
@@ -70,7 +70,12 @@ class CarViewModel extends GetxController {
       _totalCars.value = response.pagination.total;
       _hasMorePages.value = response.pagination.hasMorePages;
     } catch (e) {
-      _errorMessage.value = e.toString();
+      // Extract error message, removing "Exception: " prefix if present
+      String errorMsg = e.toString();
+      if (errorMsg.startsWith('Exception: ')) {
+        errorMsg = errorMsg.substring(11);
+      }
+      _errorMessage.value = errorMsg;
       _cars.value = [];
       _currentPage.value = 1;
       _totalPages.value = 1;
@@ -131,14 +136,5 @@ class CarViewModel extends GetxController {
     } catch (e) {
       return null;
     }
-  }
-
-  // Get status counts
-  Map<String, int> getStatusCounts() {
-    final counts = <String, int>{};
-    for (final car in _cars) {
-      counts[car.status] = (counts[car.status] ?? 0) + 1;
-    }
-    return counts;
   }
 }
