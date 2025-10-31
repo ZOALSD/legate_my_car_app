@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:legate_my_car/views/add_car_view.dart';
+import 'package:legate_my_car/views/car_form_view.dart';
 import 'package:legate_my_car/views/car_single_view.dart';
 import 'package:legate_my_car/views/search_Widget.dart';
 import '../viewmodels/car_viewmodel.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../models/car_model.dart';
 import 'dart:ui' as ui;
+import 'package:visibility_detector/visibility_detector.dart';
 
 class _AppConstants {
   static const double cardBorderRadius = 12.0;
@@ -169,7 +170,7 @@ class _CarListViewState extends State<CarListView> {
                   break;
                 case 'upload_car':
                   Get.to(
-                    () => AddCarView(),
+                    () => CarFormView(),
                   )?.then((_) => viewModel.loadCars(page: 1));
                   break;
                 case 'about_app':
@@ -274,51 +275,8 @@ class _CarListViewState extends State<CarListView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Car Image
-            Expanded(
-              flex: 4,
-              child: Stack(
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(12),
-                    ),
-                    child:
-                        vehicle.imageUrl != null && vehicle.imageUrl!.isNotEmpty
-                        ? CachedNetworkImage(
-                            imageUrl: vehicle.imageUrl!,
-                            width: double.infinity,
-                            height: double.infinity,
-                            fit: BoxFit.cover,
-                            placeholder: (context, url) => Container(
-                              color: Colors.grey[800],
-                              child: const Center(
-                                child: CircularProgressIndicator(),
-                              ),
-                            ),
-                            errorWidget: (context, url, error) => Container(
-                              color: Colors.grey[800],
-                              child: Icon(
-                                Icons.car_rental,
-                                color: Colors.grey[400],
-                                size: 40,
-                              ),
-                            ),
-                          )
-                        : Container(
-                            width: double.infinity,
-                            height: double.infinity,
-                            color: Colors.grey[800],
-                            child: Icon(
-                              Icons.car_crash_outlined,
-                              color: Colors.grey[400],
-                              size: 80,
-                            ),
-                          ),
-                  ),
-                ],
-              ),
-            ),
+            // Car Image with lazy loading
+            Expanded(flex: 4, child: _buildLazyImage(vehicle, index)),
 
             // Car Details
             Expanded(
@@ -347,7 +305,7 @@ class _CarListViewState extends State<CarListView> {
                       ),
                     ),
                     Text(
-                      "${vehicle.brand ?? " "} - ${vehicle.model ?? ""}",
+                      "${vehicle.modelYear ?? " "} - ${vehicle.model ?? ""}",
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
                     ),
@@ -357,6 +315,102 @@ class _CarListViewState extends State<CarListView> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildLazyImage(CarModel vehicle, int index) {
+    return ClipRRect(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+      child: vehicle.imageUrl != null && vehicle.imageUrl!.isNotEmpty
+          ? _LazyCachedImage(imageUrl: vehicle.imageUrl!, index: index)
+          : Container(
+              width: double.infinity,
+              height: double.infinity,
+              color: Colors.grey[800],
+              child: Icon(
+                Icons.car_crash_outlined,
+                color: Colors.grey[400],
+                size: 80,
+              ),
+            ),
+    );
+  }
+}
+
+class _LazyCachedImage extends StatefulWidget {
+  final String imageUrl;
+  final int index;
+
+  const _LazyCachedImage({required this.imageUrl, required this.index});
+
+  @override
+  State<_LazyCachedImage> createState() => _LazyCachedImageState();
+}
+
+class _LazyCachedImageState extends State<_LazyCachedImage> {
+  bool _isVisible = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return VisibilityDetector(
+      key: Key('visibility_${widget.imageUrl}_${widget.index}'),
+      onVisibilityChanged: (VisibilityInfo info) {
+        // Load image when it becomes visible (threshold: 50% visible)
+        if (info.visibleFraction > 0.5 && !_isVisible) {
+          if (mounted) {
+            setState(() {
+              _isVisible = true;
+            });
+          }
+        }
+      },
+      child: Container(
+        width: double.infinity,
+        height: double.infinity,
+        color: Colors.grey[800],
+        child: _isVisible
+            ? CachedNetworkImage(
+                imageUrl: widget.imageUrl,
+                width: double.infinity,
+                height: double.infinity,
+                fit: BoxFit.cover,
+                // Optimize memory usage
+                memCacheWidth: 500,
+                memCacheHeight: 500,
+                // Optimize disk cache
+                maxWidthDiskCache: 1000,
+                maxHeightDiskCache: 1000,
+                // Smooth fade-in animation
+                fadeInDuration: const Duration(milliseconds: 300),
+                fadeOutDuration: const Duration(milliseconds: 100),
+                placeholder: (context, url) => Container(
+                  color: Colors.grey[800],
+                  child: const Center(
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white70),
+                    ),
+                  ),
+                ),
+                errorWidget: (context, url, error) => Container(
+                  color: Colors.grey[800],
+                  child: Icon(
+                    Icons.car_rental,
+                    color: Colors.grey[400],
+                    size: 40,
+                  ),
+                ),
+              )
+            : Container(
+                color: Colors.grey[800],
+                child: const Center(
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white70),
+                  ),
+                ),
+              ),
       ),
     );
   }

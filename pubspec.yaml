@@ -55,6 +55,7 @@ dependencies:
   cached_network_image: ^3.4.1
   flutter_svg: ^2.2.1
   image_picker: ^1.2.0
+  visibility_detector: ^0.4.0+2
 
   # URL launcher
   url_launcher: ^6.3.2
