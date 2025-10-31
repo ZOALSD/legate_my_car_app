@@ -2,7 +2,7 @@ class CarModel {
   final String? id;
   final String? plateNumber;
   final String? chassisNumber;
-  final String? brand;
+  final String? modelYear;
   final String? model;
   final String? color;
   final String? description;
@@ -23,7 +23,7 @@ class CarModel {
     this.id,
     required this.plateNumber,
     required this.chassisNumber,
-    required this.brand,
+    required this.modelYear,
     required this.model,
     required this.description,
     this.color,
@@ -46,7 +46,7 @@ class CarModel {
       id: json['id']?.toString() ?? '',
       plateNumber: json['plate_number'] ?? '',
       chassisNumber: json['chassis_number'] ?? '',
-      brand: json['brand'] ?? '',
+      modelYear: json['brand'] ?? '',
       model: json['model'] ?? '',
       color: json['color'] ?? '',
       description: json['description'] ?? '',
@@ -76,7 +76,7 @@ class CarModel {
       'id': id,
       'plate_number': plateNumber,
       'chassis_number': chassisNumber,
-      'brand': brand,
+      'brand': modelYear,
       'model': model,
       'color': color,
       'description': description,
@@ -87,7 +87,7 @@ class CarModel {
     };
   }
 
-  String get fullCarName => '$brand $model';
+  String get fullCarName => '$modelYear $model';
 
   String get formattedLostDate {
     return '${lostDate?.day}/${lostDate?.month}/${lostDate?.year}';
@@ -99,7 +99,7 @@ class CarModel {
 
   @override
   String toString() {
-    return 'CarModel(id: $id, plateNumber: $plateNumber, brand: $brand, model: $model, status: $status)';
+    return 'CarModel(id: $id, plateNumber: $plateNumber, modelYear: $modelYear, model: $model, status: $status)';
   }
 
   @override

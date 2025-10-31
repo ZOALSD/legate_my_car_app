@@ -4,7 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:get/get_utils/get_utils.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/car_model.dart';
-import 'add_car_view.dart';
+import 'car_form_view.dart';
 import '../theme/app_theme.dart';
 
 class CarSingleView extends StatelessWidget {
@@ -129,7 +129,7 @@ class CarSingleView extends StatelessWidget {
           _buildDetailRow('CHASSIS_NUMBER'.tr, car.chassisNumber ?? " - "),
           _buildDetailRow('PLATE_NUMBER'.tr, car.plateNumber ?? " - "),
           _buildDetailRow('LOCATION'.tr, car.location ?? " - "),
-          _buildDetailRow('BRAND'.tr, car.brand ?? " - "),
+          _buildDetailRow('BRAND'.tr, car.modelYear ?? " - "),
           _buildDetailRow('MODEL'.tr, car.model ?? " - "),
           _buildDetailRow('DESCRIPTION'.tr, car.description ?? " - "),
         ],
@@ -205,11 +205,11 @@ class CarSingleView extends StatelessWidget {
   void _editCar(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => AddCarView(car: car)),
+      MaterialPageRoute(builder: (context) => CarFormView(car: car)),
     ).then((result) {
-      // Refresh the view if car was updated
-      if (result == true && context.mounted) {
-        Navigator.pop(context, true);
+      // Pass the result back to list view if car was updated/created
+      if (result != null && context.mounted) {
+        Navigator.pop(context, result);
       }
     });
   }

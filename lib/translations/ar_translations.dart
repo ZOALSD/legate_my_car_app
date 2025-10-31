@@ -14,7 +14,7 @@ class ArTranslations {
 
     // Car List
     'LOST_CARS_TITLE': 'السيارات المفقودة في السودان',
-    'SEARCH_HINT': 'ابحث بآخر 5 أرقام من الشاسي',
+    'SEARCH_HINT': 'ابحث برقم الهيكل او رقم اللوحة او الموديل ...',
     'NO_CARS_FOUND': 'لم يتم العثور على سيارات تطابق بحثك',
     'NO_CARS_AVAILABLE': 'لا توجد سيارات متاحة',
     'TRY_ADJUSTING_SEARCH': 'حاول تعديل مصطلحات البحث',
@@ -33,9 +33,10 @@ class ArTranslations {
     // Car Details
     'CAR_DETAILS': 'تفاصيل السيارة',
     'PLATE_NUMBER': 'رقم اللوحة',
+    'CAR_NAME': 'اسم السيارة',
     'CHASSIS_NUMBER': 'رقم الهيكل',
     'BRAND': 'الماركة',
-    'MODEL': 'الطراز',
+    'MODEL': 'الموديل',
     'COLOR': 'اللون',
     'STATUS': 'الحالة',
     'LOST_DATE': 'تاريخ الفقدان',
@@ -111,8 +112,8 @@ class ArTranslations {
     'CONDITION_OTHER': 'أخرى',
     'CONDITION_DESCRIPTION': 'وصف الحالة',
     'ENTER_CONDITION_DETAILS': 'أدخل تفاصيل الحالة...',
-    'SUBMIT_CAR_REPORT': 'إرسال تقرير السيارة',
-    'UPDATE_CAR_REPORT': 'تحديث تقرير السيارة',
+    'SUBMIT_CAR_REPORT': 'رفع السيارة',
+    'UPDATE_CAR_REPORT': 'تحديث السيارة',
     'CAR_REPORT_SUCCESS': 'تم إرسال تقرير السيارة بنجاح',
     'CAR_REPORT_ERROR': 'فشل في إرسال تقرير السيارة',
     'CAR_UPDATE_SUCCESS': 'تم تحديث تقرير السيارة بنجاح',

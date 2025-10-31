@@ -9,20 +9,20 @@ import '../services/car_api_service.dart';
 import '../models/car_model.dart';
 import 'location_picker_view.dart';
 
-class AddCarView extends StatefulWidget {
+class CarFormView extends StatefulWidget {
   final CarModel? car;
 
-  const AddCarView({super.key, this.car});
+  const CarFormView({super.key, this.car});
 
   @override
-  State<AddCarView> createState() => _AddCarViewState();
+  State<CarFormView> createState() => _CarFormViewState();
 }
 
-class _AddCarViewState extends State<AddCarView> {
+class _CarFormViewState extends State<CarFormView> {
   final _formKey = GlobalKey<FormState>();
   final _plateNumberController = TextEditingController();
   final _chassisNumberController = TextEditingController();
-  final _brandController = TextEditingController();
+  final _modelYearController = TextEditingController();
   final _modelController = TextEditingController();
   final _colorController = TextEditingController();
   final _locationController = TextEditingController();
@@ -47,7 +47,7 @@ class _AddCarViewState extends State<AddCarView> {
     final car = widget.car!;
     _plateNumberController.text = car.plateNumber ?? '';
     _chassisNumberController.text = car.chassisNumber ?? '';
-    _brandController.text = car.brand ?? '';
+    _modelYearController.text = car.modelYear ?? '';
     _modelController.text = car.model ?? '';
     _colorController.text = car.color ?? '';
     _locationController.text = car.location ?? '';
@@ -65,7 +65,7 @@ class _AddCarViewState extends State<AddCarView> {
   void dispose() {
     _plateNumberController.dispose();
     _chassisNumberController.dispose();
-    _brandController.dispose();
+    _modelYearController.dispose();
     _modelController.dispose();
     _colorController.dispose();
     _locationController.dispose();
@@ -135,26 +135,18 @@ class _AddCarViewState extends State<AddCarView> {
                       ),
                       const SizedBox(height: 16),
 
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildTextField(
-                              controller: _brandController,
-                              label: 'BRAND'.tr,
-                              hint: 'مثال: تويوتا',
-                              required: false,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: _buildTextField(
-                              controller: _modelController,
-                              label: 'MODEL'.tr,
-                              hint: 'مثال: كورولا',
-                              required: false,
-                            ),
-                          ),
-                        ],
+                      _buildTextField(
+                        controller: _modelController,
+                        label: 'CAR_NAME'.tr,
+                        hint: 'مثال: كورولا',
+                        required: false,
+                      ),
+                      const SizedBox(height: 16),
+                      _buildTextField(
+                        controller: _modelYearController,
+                        label: 'MODEL'.tr,
+                        hint: 'مثال: 2025',
+                        required: false,
                       ),
                       const SizedBox(height: 16),
 
@@ -667,8 +659,9 @@ class _AddCarViewState extends State<AddCarView> {
     });
 
     try {
+      CarModel? resultCar;
       if (_isEditMode) {
-        await CarApiService.updateCar(car: car);
+        resultCar = await CarApiService.updateCar(car: car);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(
@@ -683,7 +676,10 @@ class _AddCarViewState extends State<AddCarView> {
           ),
         );
       } else {
-        await CarApiService.createCar(car: car, imageFile: _selectedImage);
+        resultCar = await CarApiService.createCar(
+          car: car,
+          imageFile: _selectedImage,
+        );
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -701,7 +697,10 @@ class _AddCarViewState extends State<AddCarView> {
       }
 
       _clearForm();
-      Get.back(result: _isEditMode ? true : null);
+      // Return the car model with action type
+      Get.back(
+        result: {'car': resultCar, 'action': _isEditMode ? 'update' : 'create'},
+      );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -731,7 +730,7 @@ class _AddCarViewState extends State<AddCarView> {
     id: widget.car?.id,
     plateNumber: _plateNumberController.text.trim(),
     chassisNumber: _chassisNumberController.text.trim(),
-    brand: _brandController.text.trim(),
+    modelYear: _modelYearController.text.trim(),
     model: _modelController.text.trim(),
     description: _conditionDescriptionController.text.trim(),
     location: _locationController.text.trim(),
@@ -742,7 +741,7 @@ class _AddCarViewState extends State<AddCarView> {
   void _clearForm() {
     _plateNumberController.clear();
     _chassisNumberController.clear();
-    _brandController.clear();
+    _modelYearController.clear();
     _modelController.clear();
     _colorController.clear();
     _locationController.clear();

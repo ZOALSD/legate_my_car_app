@@ -13,7 +13,7 @@ class EnTranslations {
 
     // Car List
     'LOST_CARS_TITLE': 'Lost Cars in Sudan',
-    'SEARCH_HINT': 'Search by the last 5 digits of the chassis',
+    'SEARCH_HINT': 'Search by chassis or plate number or model ...',
     'NO_CARS_FOUND': 'No cars found matching your search',
     'NO_CARS_AVAILABLE': 'No cars available',
     'TRY_ADJUSTING_SEARCH': 'Try adjusting your search terms',
@@ -33,6 +33,7 @@ class EnTranslations {
     'CAR_DETAILS': 'Car Details',
     'PLATE_NUMBER': 'Plate Number',
     'CHASSIS_NUMBER': 'Chassis Number',
+    'CAR_NAME': 'Car Name',
     'BRAND': 'Brand',
     'MODEL': 'Model',
     'COLOR': 'Color',
@@ -110,12 +111,12 @@ class EnTranslations {
     'CONDITION_OTHER': 'Other',
     'CONDITION_DESCRIPTION': 'Condition Description',
     'ENTER_CONDITION_DETAILS': 'Enter condition details...',
-    'SUBMIT_CAR_REPORT': 'Submit Car Report',
-    'UPDATE_CAR_REPORT': 'Update Car Report',
-    'CAR_REPORT_SUCCESS': 'Car report submitted successfully',
-    'CAR_REPORT_ERROR': 'Failed to submit car report',
-    'CAR_UPDATE_SUCCESS': 'Car report updated successfully',
-    'CAR_UPDATE_ERROR': 'Failed to update car report',
+    'SUBMIT_CAR_REPORT': 'Upload Car',
+    'UPDATE_CAR_REPORT': 'Update Car',
+    'CAR_REPORT_SUCCESS': 'Car uploaded successfully',
+    'CAR_REPORT_ERROR': 'Failed to upload car',
+    'CAR_UPDATE_SUCCESS': 'Car updated successfully',
+    'CAR_UPDATE_ERROR': 'Failed to update car',
 
     // Volunteer Features
     'VOLUNTEER_MODE': 'Volunteer Mode',
