@@ -1,0 +1,72 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Managers Debug",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "args": [
+                "--flavor",
+                "managers"
+            ]
+        },
+        {
+            "name": "Clients Debug",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "args": [
+                "--flavor",
+                "clients"
+            ]
+        },
+        {
+            "name": "Managers Release",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "args": [
+                "--release",
+                "--flavor",
+                "managers"
+            ]
+        },
+        {
+            "name": "Clients Release",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "args": [
+                "--release",
+                "--flavor",
+                "clients"
+            ]
+        },
+        {
+            "name": "Managers Profile",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "args": [
+                "--profile",
+                "--flavor",
+                "managers"
+            ]
+        },
+        {
+            "name": "Clients Profile",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "args": [
+                "--profile",
+                "--flavor",
+                "clients"
+            ]
+        }
+    ]
+}

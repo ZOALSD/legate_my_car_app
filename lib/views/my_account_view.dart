@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../models/login_model.dart';
 import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
+import '../widgets/google_sign_in_button.dart';
 
 class MyAccountView extends StatefulWidget {
   const MyAccountView({super.key});
@@ -70,6 +71,7 @@ class _MyAccountViewState extends State<MyAccountView> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   // Profile Avatar Section
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.07),
                   Center(
                     child: CircleAvatar(
                       radius: 60,
@@ -89,15 +91,17 @@ class _MyAccountViewState extends State<MyAccountView> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Email
-                  _buildInfoCard(
-                    icon: Icons.email,
-                    label: 'EMAIL'.tr,
-                    value: _user!.email.isNotEmpty
-                        ? _user!.email
-                        : 'NOT_AVAILABLE'.tr,
-                  ),
-                  const SizedBox(height: 16),
+                  // Email (only for non-guest users)
+                  if (!_user!.isGuest) ...[
+                    _buildInfoCard(
+                      icon: Icons.email,
+                      label: 'EMAIL'.tr,
+                      value: _user!.email.isNotEmpty
+                          ? _user!.email
+                          : 'NOT_AVAILABLE'.tr,
+                    ),
+                    const SizedBox(height: 16),
+                  ],
 
                   // Account Type
                   _buildInfoCard(
@@ -110,6 +114,9 @@ class _MyAccountViewState extends State<MyAccountView> {
                         : 'REGISTERED_USER'.tr,
                   ),
                   const SizedBox(height: 24),
+
+                  // Upgrade to Google Account (only for guest users)
+                  if (_user!.isGuest) _buildUpgradeButton(),
                 ],
               ),
             ),
@@ -149,6 +156,52 @@ class _MyAccountViewState extends State<MyAccountView> {
                 ],
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Build upgrade to Google account button for guest users
+  Widget _buildUpgradeButton() {
+    return Card(
+      elevation: 2,
+      color: AppTheme.primaryColor.withOpacity(0.1),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.upgrade, color: AppTheme.primaryColor, size: 24),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'UPGRADE_ACCOUNT'.tr,
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.primaryColor,
+                            ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'UPGRADE_ACCOUNT_DESCRIPTION'.tr,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppTheme.textSecondaryColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            GoogleSignInButton(showAsOutline: false, padding: EdgeInsets.zero),
           ],
         ),
       ),

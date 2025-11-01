@@ -7,12 +7,49 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:217253882595:android:e9ca927a9af2b61062f3d6",
+        "android_client_info": {
+          "package_name": "com.laqeetarabeety.clinets"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "217253882595-2acqfcqrkmm5t2o9093gfprreb40cof8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBOc3tCHwAJbvcPngBndzReVVp8fZZHYqY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "217253882595-2acqfcqrkmm5t2o9093gfprreb40cof8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:217253882595:android:89cc7acd9bde15d562f3d6",
         "android_client_info": {
           "package_name": "com.laqeetarabeety.managers"
         }
       },
       "oauth_client": [
+        {
+          "client_id": "217253882595-b7rcp2919ds16o84poq0aadtmppd8cn9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.laqeetarabeety.managers",
+            "certificate_hash": "b2f1c83f21b65be02ae203d005671f4a99b88b34"
+          }
+        },
         {
           "client_id": "217253882595-2acqfcqrkmm5t2o9093gfprreb40cof8.apps.googleusercontent.com",
           "client_type": 3

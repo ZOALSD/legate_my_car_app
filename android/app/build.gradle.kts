@@ -21,14 +21,27 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.laqeetarabeety.managers"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+    }
+
+    flavorDimensions += "app"
+    productFlavors {
+        create("managers") {
+            dimension = "app"
+            applicationId = "com.laqeetarabeety.managers"
+            resValue("string", "app_name", "لقيت عربيتي - Managers")
+            resValue("string", "app_flavor", "managers")
+        }
+        create("clients") {
+            dimension = "app"
+            applicationId = "com.laqeetarabeety.clinets"
+            resValue("string", "app_name", "لقيت عربيتي - Clients")
+            resValue("string", "app_flavor", "clients")
+        }
     }
 
     buildTypes {

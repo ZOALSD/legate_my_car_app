@@ -174,6 +174,11 @@ class ArTranslations {
     'NO_USER_INFO': 'لا توجد معلومات المستخدم متاحة',
     'FAILED_TO_LOAD_USER_INFO': 'فشل في تحميل معلومات المستخدم',
     'ERROR': 'خطأ',
+    'UPGRADE_ACCOUNT': 'ترقية الحساب',
+    'UPGRADE_ACCOUNT_DESCRIPTION':
+        'قم بترقية حسابك الضيف إلى حساب Google لتمكينك من رفع سيارات مفقودة والحصول على إشعارات عندما تم العثور عليها',
+    'ACCOUNT_UPGRADED_SUCCESS': 'تمت ترقية الحساب بنجاح',
+    'SUCCESS': 'نجاح',
 
     // About App Page
     'VERSION': 'الإصدار',
