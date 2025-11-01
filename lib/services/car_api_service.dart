@@ -155,9 +155,20 @@ class CarApiService {
   }
 
   // Update car report with multipart form data
-  static Future<CarModel> updateCar({required CarModel car}) async {
+  static Future<CarModel> updateCar({
+    required CarModel car,
+    File? imageFile,
+  }) async {
     try {
-      final formData = car.toJson();
+      final carJson = car.toJson();
+      final formData = FormData.fromMap({...carJson});
+
+      if (imageFile != null) {
+        formData.files.add(
+          MapEntry('image_path', await MultipartFile.fromFile(imageFile.path)),
+        );
+      }
+
       final response = await dio.post('/cars/${car.id}/update', data: formData);
 
       if (response.statusCode == 200) {

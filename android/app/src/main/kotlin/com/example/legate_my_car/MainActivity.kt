@@ -1,4 +1,4 @@
-package com.example.legate_my_car
+package com.laqeetarabeety.managers
 
 import io.flutter.embedding.android.FlutterActivity
 

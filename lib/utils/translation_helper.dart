@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class TranslationHelper {
@@ -58,5 +59,105 @@ class TranslationHelper {
   // Check if current language is RTL
   static bool isRTL() {
     return Get.locale?.languageCode == 'ar';
+  }
+
+  // Show Material SnackBar
+  static void showSnackBar(
+    BuildContext context, {
+    required String message,
+    String? title,
+    Color? backgroundColor,
+    Color? textColor,
+    Duration duration = const Duration(seconds: 3),
+  }) {
+    if (!context.mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: title != null
+            ? Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: textColor ?? Colors.white,
+                      fontSize: 14,
+                    ),
+                  ),
+                  Text(
+                    message,
+                    style: TextStyle(
+                      color: textColor ?? Colors.white,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              )
+            : Text(
+                message,
+                style: TextStyle(
+                  color: textColor ?? Colors.white,
+                  fontSize: 14,
+                ),
+              ),
+        backgroundColor: backgroundColor,
+        duration: duration,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  // Show success SnackBar
+  static void showSuccessSnackBar(
+    BuildContext context, {
+    required String message,
+    String? title,
+    Duration duration = const Duration(seconds: 3),
+  }) {
+    showSnackBar(
+      context,
+      message: message,
+      title: title,
+      backgroundColor: Colors.green,
+      textColor: Colors.white,
+      duration: duration,
+    );
+  }
+
+  // Show error SnackBar
+  static void showErrorSnackBar(
+    BuildContext context, {
+    required String message,
+    String? title,
+    Duration duration = const Duration(seconds: 4),
+  }) {
+    showSnackBar(
+      context,
+      message: message,
+      title: title,
+      backgroundColor: Colors.red,
+      textColor: Colors.white,
+      duration: duration,
+    );
+  }
+
+  // Show info SnackBar
+  static void showInfoSnackBar(
+    BuildContext context, {
+    required String message,
+    String? title,
+    Duration duration = const Duration(seconds: 3),
+  }) {
+    showSnackBar(
+      context,
+      message: message,
+      title: title,
+      backgroundColor: Colors.blue,
+      textColor: Colors.white,
+      duration: duration,
+    );
   }
 }

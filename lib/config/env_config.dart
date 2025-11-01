@@ -3,7 +3,7 @@ enum AppEnvironment { staging, production }
 class EnvConfig {
   // Environment configuration
   // Change this to switch between staging and production
-  static const AppEnvironment environment = AppEnvironment.production;
+  static const AppEnvironment environment = AppEnvironment.staging;
 
   // API URLs for different environments
   static const Map<AppEnvironment, String> _apiUrls = {

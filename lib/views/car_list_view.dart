@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:legate_my_car/views/car_form_view.dart';
+import 'package:legate_my_car/theme/app_theme.dart';
 import 'package:legate_my_car/views/car_single_view.dart';
 import 'package:legate_my_car/views/search_Widget.dart';
+import 'package:legate_my_car/views/menu_view.dart';
 import '../viewmodels/car_viewmodel.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../models/car_model.dart';
@@ -149,7 +150,7 @@ class _CarListViewState extends State<CarListView> {
               Text(
                 "APP_TITLE".tr,
                 style: TextStyle(
-                  // color: Colors.white,
+                  color: AppTheme.primaryColor,
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Tajawal',
@@ -157,80 +158,9 @@ class _CarListViewState extends State<CarListView> {
               ),
             ],
           ),
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert),
-            onSelected: (String value) {
-              // Handle menu item selection
-              switch (value) {
-                case 'my_account':
-                  // Navigate to my account page
-                  break;
-                case 'my_request':
-                  // Navigate to my request page
-                  break;
-                case 'upload_car':
-                  Get.to(() => CarFormView())?.then((result) {
-                    if (result != null && result is Map) {
-                      final car = result['car'] as CarModel?;
-                      final action = result['action'] as String?;
-
-                      if (car != null && action != null) {
-                        if (action == 'create') {
-                          viewModel.addCar(car);
-                        } else if (action == 'update') {
-                          viewModel.updateCar(car);
-                        }
-                      }
-                    }
-                  });
-                  break;
-                case 'about_app':
-                  // Show about app dialog
-                  break;
-              }
-            },
-            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-              PopupMenuItem<String>(
-                value: 'my_account',
-                child: Row(
-                  children: [
-                    const Icon(Icons.person, color: Colors.grey),
-                    const SizedBox(width: 10),
-                    Text('MY_ACCOUNT'.tr),
-                  ],
-                ),
-              ),
-              PopupMenuItem<String>(
-                value: 'my_request',
-                child: Row(
-                  children: [
-                    const Icon(Icons.request_page, color: Colors.grey),
-                    const SizedBox(width: 10),
-                    Text('MY_REQUEST'.tr),
-                  ],
-                ),
-              ),
-              PopupMenuItem<String>(
-                value: 'upload_car',
-                child: Row(
-                  children: [
-                    const Icon(Icons.add_circle, color: Colors.grey),
-                    const SizedBox(width: 10),
-                    Text('UPLOAD_CAR'.tr),
-                  ],
-                ),
-              ),
-              PopupMenuItem<String>(
-                value: 'about_app',
-                child: Row(
-                  children: [
-                    const Icon(Icons.info, color: Colors.grey),
-                    const SizedBox(width: 10),
-                    Text('ABOUT_APP'.tr),
-                  ],
-                ),
-              ),
-            ],
+          MenuView(
+            onCarAdded: (CarModel car) => viewModel.addCar(car),
+            onCarUpdated: (CarModel car) => viewModel.updateCar(car),
           ),
         ],
       ),

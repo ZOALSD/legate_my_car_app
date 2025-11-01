@@ -149,5 +149,37 @@ class EnTranslations {
     'MY_REQUEST': 'My Request',
     'UPLOAD_CAR': 'Upload Car',
     'ABOUT_APP': 'About App',
+
+    // Authentication
+    'SIGN_IN': 'Sign In',
+    'SIGN_IN_WITH_GOOGLE': 'Sign in with Google',
+    'SIGNING_IN': 'Signing in...',
+    'SIGN_IN_SUCCESS': 'Signed in successfully',
+    'SIGN_IN_ERROR': 'Failed to sign in',
+    'SIGN_IN_CANCELED': 'Sign in canceled',
+    'CONTINUE_AS_GUEST': 'Continue as Guest',
+    'GOOGLE_SIGN_IN_ERROR': 'Google sign-in error',
+    'LOGOUT': 'Logout',
+    'LOGOUT_CONFIRM': 'Are you sure you want to logout?',
+    'CANCEL': 'Cancel',
+
+    // Account Page
+    'NAME': 'Name',
+    'EMAIL': 'Email',
+    'ACCOUNT_TYPE': 'Account Type',
+    'GUEST_USER': 'Guest User',
+    'REGISTERED_USER': 'Registered User',
+    'NOT_AVAILABLE': 'Not Available',
+    'NO_USER_INFO': 'No user information available',
+    'FAILED_TO_LOAD_USER_INFO': 'Failed to load user information',
+    'ERROR': 'Error',
+
+    // About App Page
+    'VERSION': 'Version',
+    'APP_DESCRIPTION_TITLE': 'Description',
+    'APP_DESCRIPTION':
+        'A Sudanese platform dedicated to helping citizens find their lost cars',
+    'DEVELOPED_FOR': 'Developed For',
+    'COPYRIGHT': 'All rights reserved',
   };
 }

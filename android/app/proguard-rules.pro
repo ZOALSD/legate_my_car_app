@@ -53,4 +53,4 @@
 }
 
 # Keep all classes in the app package
--keep class com.example.legate_my_car.** { *; }
+-keep class com.laqeetarabeety.managers.** { *; }

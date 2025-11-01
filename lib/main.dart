@@ -7,7 +7,8 @@ import 'translations/app_translations.dart';
 import 'controllers/language_controller.dart';
 import 'config/env_config.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }
 

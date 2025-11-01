@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "217253882595",
+    "project_id": "laqeetarabeety",
+    "storage_bucket": "laqeetarabeety.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:217253882595:android:89cc7acd9bde15d562f3d6",
+        "android_client_info": {
+          "package_name": "com.laqeetarabeety.managers"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "217253882595-2acqfcqrkmm5t2o9093gfprreb40cof8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBOc3tCHwAJbvcPngBndzReVVp8fZZHYqY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "217253882595-2acqfcqrkmm5t2o9093gfprreb40cof8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../utils/connection_helper.dart';
 import '../models/login_model.dart';
 import 'dio_service.dart';
@@ -105,6 +106,13 @@ class AuthService {
   /// Logout user (clear token and user info)
   static Future<void> logout() async {
     try {
+      // Sign out from Google Sign-In
+      try {
+        final GoogleSignIn googleSignIn = GoogleSignIn();
+        await googleSignIn.signOut();
+      } catch (_) {}
+
+      // Clear stored tokens
       await _storage.delete(key: _tokenKey);
       await _storage.delete(key: _userKey);
       print('✅ Logged out successfully');
@@ -126,6 +134,101 @@ class AuthService {
       print('❌ Error reading user info: $e');
     }
     return null;
+  }
+
+  /// Sign in with Google
+  static Future<bool> signInWithGoogle() async {
+    try {
+      // Check internet connection first
+      final hasInternet = await ConnectionHelper.hasInternet();
+      if (!hasInternet) {
+        print('❌ No internet connection');
+        return false;
+      }
+
+      // Initialize Google Sign-In
+      final GoogleSignIn googleSignIn = GoogleSignIn(
+        scopes: ['email', 'profile'],
+      );
+
+      // Sign out first to ensure clean state
+      await googleSignIn.signOut();
+
+      // Trigger the authentication flow
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+
+      if (googleUser == null) {
+        // User canceled the sign-in
+        print('❌ User canceled Google Sign-In');
+        return false;
+      }
+
+      // Get user email
+      final email = googleUser.email;
+      if (email.isEmpty) {
+        print('❌ Failed to get email from Google account');
+        await googleSignIn.signOut();
+        return false;
+      }
+
+      // Obtain the auth details from the request
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      if (googleAuth.idToken == null) {
+        print('❌ Failed to get Google ID token');
+        await googleSignIn.signOut();
+        return false;
+      }
+
+      // Send email and idToken to backend
+      final endpoint = '/auth/login';
+      final dio = DioService.instance;
+      final response = await dio.post(
+        endpoint,
+        data: {'email': email, 'idToken': googleAuth.idToken},
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = response.data as Map<String, dynamic>;
+
+        // Check if response is successful
+        if (responseData['success'] == true) {
+          // The data field contains the token as a string
+          final token = responseData['data'] as String?;
+
+          if (token != null && token.isNotEmpty) {
+            // Store token
+            await _setToken(token);
+
+            // Store user info from Google account
+            final userJson = jsonEncode({
+              'id': 0, // Will be updated from backend if available
+              'name': googleUser.displayName ?? '',
+              'email': email,
+              'is_guest': false,
+            });
+            await _storage.write(key: _userKey, value: userJson);
+
+            print('✅ Google Sign-In successful');
+            return true;
+          }
+        }
+      }
+
+      // If backend call fails, sign out from Google
+      await googleSignIn.signOut();
+      print('❌ Backend authentication failed');
+      return false;
+    } catch (e) {
+      print('❌ Error during Google Sign-In: $e');
+      // Ensure we sign out on error
+      try {
+        final GoogleSignIn googleSignIn = GoogleSignIn();
+        await googleSignIn.signOut();
+      } catch (_) {}
+      return false;
+    }
   }
 
   /// Get headers with authentication

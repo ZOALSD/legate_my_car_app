@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get_utils/get_utils.dart';
+import 'package:legate_my_car/theme/app_theme.dart';
 import 'package:legate_my_car/views/car_list_view.dart';
+import 'package:legate_my_car/views/login_view.dart';
 import '../services/auth_service.dart';
 import '../utils/connection_helper.dart';
 
@@ -32,10 +34,15 @@ class _IntroViewState extends State<IntroView> {
         if (hasToken) {
           isAuthenticated = true;
         } else {
-          final loginSuccess = await AuthService.loginAsGuest();
-          if (loginSuccess) {
-            isAuthenticated = true;
+          // Show login view instead of auto-logging as guest
+          setState(() {
+            isLoading = false;
+          });
+          if (mounted) {
+            await Future.delayed(const Duration(milliseconds: 500));
+            _redirectToLoginView();
           }
+          return;
         }
       } else {
         setState(() {
@@ -49,7 +56,9 @@ class _IntroViewState extends State<IntroView> {
       }
     } catch (e) {
       await Future.delayed(const Duration(seconds: 1));
-      _redirectToCarListView();
+      if (mounted) {
+        _redirectToLoginView();
+      }
     }
   }
 
@@ -58,6 +67,15 @@ class _IntroViewState extends State<IntroView> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const CarListView()),
+      );
+    }
+  }
+
+  void _redirectToLoginView() {
+    if (mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginView()),
       );
     }
   }
@@ -74,7 +92,11 @@ class _IntroViewState extends State<IntroView> {
             const SizedBox(height: 15),
             Text(
               "APP_TITLE".tr,
-              style: TextStyle(fontSize: 45, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 45,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.primaryColor,
+              ),
             ),
             const SizedBox(height: 20),
             _loadingIndicatorOrNoInternetMessage(),
