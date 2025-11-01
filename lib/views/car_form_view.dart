@@ -661,7 +661,10 @@ class _CarFormViewState extends State<CarFormView> {
     try {
       CarModel? resultCar;
       if (_isEditMode) {
-        resultCar = await CarApiService.updateCar(car: car);
+        resultCar = await CarApiService.updateCar(
+          car: car,
+          imageFile: _selectedImage,
+        );
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(

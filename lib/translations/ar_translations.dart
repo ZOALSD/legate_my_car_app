@@ -160,5 +160,27 @@ class ArTranslations {
     'SIGN_IN_CANCELED': 'تم إلغاء تسجيل الدخول',
     'CONTINUE_AS_GUEST': 'متابعة كضيف',
     'GOOGLE_SIGN_IN_ERROR': 'خطأ في تسجيل الدخول ب Google',
+    'LOGOUT': 'تسجيل الخروج',
+    'LOGOUT_CONFIRM': 'هل أنت متأكد من أنك تريد تسجيل الخروج؟',
+    'CANCEL': 'إلغاء',
+
+    // Account Page
+    'NAME': 'الاسم',
+    'EMAIL': 'البريد الإلكتروني',
+    'ACCOUNT_TYPE': 'نوع الحساب',
+    'GUEST_USER': 'مستخدم ضيف',
+    'REGISTERED_USER': 'مستخدم مسجل',
+    'NOT_AVAILABLE': 'غير متاح',
+    'NO_USER_INFO': 'لا توجد معلومات المستخدم متاحة',
+    'FAILED_TO_LOAD_USER_INFO': 'فشل في تحميل معلومات المستخدم',
+    'ERROR': 'خطأ',
+
+    // About App Page
+    'VERSION': 'الإصدار',
+    'APP_DESCRIPTION_TITLE': 'الوصف',
+    'APP_DESCRIPTION':
+        'منصة سودانية مخصصة لمساعدة المواطنين في العثور على سياراتهم المفقودة في السودان.',
+    'DEVELOPED_FOR': 'مطوّر لـ',
+    'COPYRIGHT': 'جميع الحقوق محفوظة',
   };
 }

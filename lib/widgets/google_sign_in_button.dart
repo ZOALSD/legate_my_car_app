@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../services/auth_service.dart';
 import '../views/car_list_view.dart';
+import '../utils/translation_helper.dart';
 
 /// A reusable Google Sign-In button widget
 class GoogleSignInButton extends StatefulWidget {
@@ -40,32 +41,25 @@ class _GoogleSignInButtonState extends State<GoogleSignInButton> {
           );
 
           // Show success message
-          Get.snackbar(
-            'SIGN_IN_SUCCESS'.tr,
-            '',
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.green,
-            colorText: Colors.white,
+          TranslationHelper.showSuccessSnackBar(
+            context,
+            message: 'SIGN_IN_SUCCESS'.tr,
           );
         } else {
           // Show error message
-          Get.snackbar(
-            'SIGN_IN_ERROR'.tr,
-            'GOOGLE_SIGN_IN_ERROR'.tr,
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.red,
-            colorText: Colors.white,
+          TranslationHelper.showErrorSnackBar(
+            context,
+            message: 'GOOGLE_SIGN_IN_ERROR'.tr,
+            title: 'SIGN_IN_ERROR'.tr,
           );
         }
       }
     } catch (e) {
       if (mounted) {
-        Get.snackbar(
-          'SIGN_IN_ERROR'.tr,
-          e.toString(),
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
+        TranslationHelper.showErrorSnackBar(
+          context,
+          message: e.toString(),
+          title: 'SIGN_IN_ERROR'.tr,
         );
       }
     } finally {
