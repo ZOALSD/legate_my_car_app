@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../utils/connection_helper.dart';
 import '../widgets/google_sign_in_button.dart';
 import '../theme/app_theme.dart';
+import '../config/app_flavor.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -41,7 +42,7 @@ class _LoginViewState extends State<LoginView> {
               SizedBox(height: MediaQuery.of(context).size.height * 0.2),
               // App Logo
               SvgPicture.asset(
-                'assets/images/logo.svg',
+                AppFlavorConfig.logoPath,
                 width: 150,
                 height: 150,
               ),

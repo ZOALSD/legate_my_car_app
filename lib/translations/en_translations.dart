@@ -173,6 +173,11 @@ class EnTranslations {
     'NO_USER_INFO': 'No user information available',
     'FAILED_TO_LOAD_USER_INFO': 'Failed to load user information',
     'ERROR': 'Error',
+    'UPGRADE_ACCOUNT': 'Upgrade Account',
+    'UPGRADE_ACCOUNT_DESCRIPTION':
+        'Upgrade your guest account to a Google account to enable uploading lost cars and receiving notifications when they are found',
+    'ACCOUNT_UPGRADED_SUCCESS': 'Account upgraded successfully',
+    'SUCCESS': 'Success',
 
     // About App Page
     'VERSION': 'Version',

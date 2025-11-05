@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:legate_my_car/config/app_flavor.dart';
 import 'package:legate_my_car/models/car_model.dart';
 import 'package:legate_my_car/services/auth_service.dart';
 import 'package:legate_my_car/views/login_view.dart';
@@ -73,16 +74,17 @@ class MenuView extends StatelessWidget {
         //     ],
         //   ),
         // ),
-        PopupMenuItem<String>(
-          value: 'upload_car',
-          child: Row(
-            children: [
-              const Icon(Icons.add_circle, color: Colors.grey),
-              const SizedBox(width: 10),
-              Text('UPLOAD_CAR'.tr),
-            ],
+        if (AppFlavorConfig.isManagers)
+          PopupMenuItem<String>(
+            value: 'upload_car',
+            child: Row(
+              children: [
+                const Icon(Icons.add_circle, color: Colors.grey),
+                const SizedBox(width: 10),
+                Text('UPLOAD_CAR'.tr),
+              ],
+            ),
           ),
-        ),
         PopupMenuItem<String>(
           value: 'about_app',
           child: Row(

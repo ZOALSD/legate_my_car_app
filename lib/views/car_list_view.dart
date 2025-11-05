@@ -8,6 +8,7 @@ import 'package:legate_my_car/views/menu_view.dart';
 import '../viewmodels/car_viewmodel.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../models/car_model.dart';
+import '../config/app_flavor.dart';
 import 'dart:ui' as ui;
 import 'package:visibility_detector/visibility_detector.dart';
 
@@ -146,7 +147,7 @@ class _CarListViewState extends State<CarListView> {
           Row(
             children: [
               const SizedBox(width: 10),
-              SvgPicture.asset('assets/images/logo.svg', width: 40, height: 40),
+              SvgPicture.asset(AppFlavorConfig.logoPath, width: 40, height: 40),
               Text(
                 "APP_TITLE".tr,
                 style: TextStyle(

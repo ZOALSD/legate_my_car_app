@@ -6,9 +6,12 @@ import 'theme/app_theme.dart';
 import 'translations/app_translations.dart';
 import 'controllers/language_controller.dart';
 import 'config/env_config.dart';
+import 'config/app_flavor.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Initialize app flavor detection
+  await AppFlavorConfig.init();
   runApp(const MyApp());
 }
 

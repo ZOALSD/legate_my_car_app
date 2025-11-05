@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:legate_my_car/theme/app_theme.dart';
+import 'package:legate_my_car/config/app_flavor.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class AboutAppView extends StatelessWidget {
@@ -17,7 +18,7 @@ class AboutAppView extends StatelessWidget {
           children: [
             const SizedBox(height: 24),
             // App Logo
-            SvgPicture.asset('assets/images/logo.svg', width: 80, height: 80),
+            SvgPicture.asset(AppFlavorConfig.logoPath, width: 80, height: 80),
             const SizedBox(height: 24),
             // App Title
             Text(

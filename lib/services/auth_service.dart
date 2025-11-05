@@ -174,7 +174,7 @@ class AuthService {
       // Obtain the auth details from the request
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
-
+      final idToken = googleAuth.idToken;
       if (googleAuth.idToken == null) {
         print('❌ Failed to get Google ID token');
         await googleSignIn.signOut();
@@ -186,7 +186,7 @@ class AuthService {
       final dio = DioService.instance;
       final response = await dio.post(
         endpoint,
-        data: {'email': email, 'idToken': googleAuth.idToken},
+        data: {'idToken': googleAuth.idToken},
       );
 
       if (response.statusCode == 200) {
