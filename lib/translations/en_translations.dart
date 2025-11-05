@@ -179,6 +179,20 @@ class EnTranslations {
     'ACCOUNT_UPGRADED_SUCCESS': 'Account upgraded successfully',
     'SUCCESS': 'Success',
 
+    // Lost Cars for Clients
+    'MY_LOST_CARS': 'My Lost Cars',
+    'UPDATE_LOST_CAR': 'Update Lost Car',
+    'ADD_LOST_CAR': 'Add Lost Car',
+    'ADD_NEW_CAR': 'Add New Car',
+    'NO_LOST_CARS': 'No lost cars found',
+    'REPORT_MISSING_CAR_HINT': 'You haven\'t reported any missing cars yet',
+    'LOST_CAR_UPDATE_SUCCESS': 'Lost car updated successfully',
+    'LOST_CAR_UPDATE_ERROR': 'Failed to update lost car',
+    'LOST_CAR_ADD_SUCCESS': 'Lost car request created successfully',
+    'LOST_CAR_ADD_ERROR': 'Failed to create lost car request',
+    'ADDITIONAL_INFO': 'Additional Information',
+    'MISSING_DATE': 'Missing Date',
+
     // About App Page
     'VERSION': 'Version',
     'APP_DESCRIPTION_TITLE': 'Description',

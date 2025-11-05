@@ -8,6 +8,7 @@ import 'package:legate_my_car/views/login_view.dart';
 import 'car_form_view.dart';
 import 'my_account_view.dart';
 import 'about_app_view.dart';
+import 'my_lost_cars_view.dart';
 
 class MenuView extends StatelessWidget {
   final Function(CarModel) onCarAdded;
@@ -64,16 +65,17 @@ class MenuView extends StatelessWidget {
             ],
           ),
         ),
-        // PopupMenuItem<String>(
-        //   value: 'my_request',
-        //   child: Row(
-        //     children: [
-        //       const Icon(Icons.request_page, color: Colors.grey),
-        //       const SizedBox(width: 10),
-        //       Text('MY_REQUEST'.tr),
-        //     ],
-        //   ),
-        // ),
+        if (AppFlavorConfig.isClients)
+          PopupMenuItem<String>(
+            value: 'my_lost_cars',
+            child: Row(
+              children: [
+                const Icon(Icons.directions_car, color: Colors.grey),
+                const SizedBox(width: 10),
+                Text('MY_LOST_CARS'.tr),
+              ],
+            ),
+          ),
         if (AppFlavorConfig.isManagers)
           PopupMenuItem<String>(
             value: 'upload_car',
@@ -118,8 +120,8 @@ class MenuView extends StatelessWidget {
       case 'my_account':
         Get.to(() => const MyAccountView());
         break;
-      case 'my_request':
-        // Navigate to my request page
+      case 'my_lost_cars':
+        Get.to(() => const MyLostCarsView());
         break;
       case 'upload_car':
         Get.to(() => CarFormView())?.then((result) {

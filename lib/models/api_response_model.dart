@@ -1,4 +1,5 @@
 import 'car_model.dart';
+import 'lost_car_request_model.dart';
 
 class ApiResponseModel<T> {
   final bool success;
@@ -90,6 +91,39 @@ class CarsApiResponse {
     return {
       'success': true,
       'data': cars.map((car) => car.toJson()).toList(),
+      'pagination': pagination.toJson(),
+    };
+  }
+}
+
+class LostCarRequestsApiResponse {
+  final List<LostCarRequestModel> requests;
+  final SimplePagination pagination;
+
+  LostCarRequestsApiResponse({
+    required this.requests,
+    required this.pagination,
+  });
+
+  factory LostCarRequestsApiResponse.fromJson(Map<String, dynamic> json) {
+    return LostCarRequestsApiResponse(
+      requests:
+          (json['data'] as List<dynamic>?)
+              ?.map(
+                (requestJson) => LostCarRequestModel.fromJson(
+                  requestJson as Map<String, dynamic>,
+                ),
+              )
+              .toList() ??
+          [],
+      pagination: SimplePagination.fromJson(json['pagination'] ?? {}),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'success': true,
+      'data': requests.map((request) => request.toJson()).toList(),
       'pagination': pagination.toJson(),
     };
   }

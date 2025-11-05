@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:dio/dio.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../models/login_model.dart';
 import '../services/auth_service.dart';
+import '../services/dio_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/google_sign_in_button.dart';
+import '../utils/connection_helper.dart';
 
 class MyAccountView extends StatefulWidget {
   const MyAccountView({super.key});
@@ -24,15 +28,92 @@ class _MyAccountViewState extends State<MyAccountView> {
 
   Future<void> _loadUserData() async {
     try {
+      setState(() {
+        _isLoading = true;
+      });
+
+      // Check internet connection first
+      final hasInternet = await ConnectionHelper.hasInternet();
+      if (!hasInternet) {
+        // If no internet, try to load from storage
+        final user = await AuthService.getCurrentUser();
+        setState(() {
+          _user = user;
+          _isLoading = false;
+        });
+        if (mounted && _user == null) {
+          Get.snackbar(
+            'ERROR'.tr,
+            'NO_INTERNET_CONNECTION'.tr,
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: AppTheme.errorColor,
+            colorText: Colors.white,
+          );
+        }
+        return;
+      }
+
+      // Call API to get user info
+      final endpoint = '/guest/info';
+      final dio = DioService.instance;
+      final response = await dio.get(endpoint);
+
+      if (response.statusCode == 200) {
+        final userInfoResponse = UserInfoResponseModel.fromJson(
+          response.data as Map<String, dynamic>,
+        );
+
+        if (userInfoResponse.success) {
+          // Save user info to storage
+          final userJson = userInfoResponse.user.toJsonString();
+          final storage = const FlutterSecureStorage();
+          await storage.write(key: 'auth_user', value: userJson);
+
+          setState(() {
+            _user = userInfoResponse.user;
+            _isLoading = false;
+          });
+        } else {
+          throw Exception('Failed to load user info: Invalid response');
+        }
+      } else {
+        throw Exception('Failed to load user info: ${response.statusCode}');
+      }
+    } on DioException catch (e) {
+      // Handle DioException - try to load from storage as fallback
       final user = await AuthService.getCurrentUser();
       setState(() {
         _user = user;
         _isLoading = false;
       });
+
+      if (mounted) {
+        String errorMessage = 'FAILED_TO_LOAD_USER_INFO'.tr;
+        if (e.type == DioExceptionType.connectionTimeout ||
+            e.type == DioExceptionType.receiveTimeout) {
+          errorMessage = 'CONNECTION_TIMEOUT'.tr;
+        } else if (e.type == DioExceptionType.connectionError) {
+          errorMessage = 'NO_INTERNET_CONNECTION'.tr;
+        } else if (e.response?.statusCode == 401) {
+          errorMessage = 'UNAUTHORIZED'.tr;
+        }
+
+        Get.snackbar(
+          'ERROR'.tr,
+          errorMessage,
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: AppTheme.errorColor,
+          colorText: Colors.white,
+        );
+      }
     } catch (e) {
+      // Fallback to storage on any other error
+      final user = await AuthService.getCurrentUser();
       setState(() {
+        _user = user;
         _isLoading = false;
       });
+
       if (mounted) {
         Get.snackbar(
           'ERROR'.tr,

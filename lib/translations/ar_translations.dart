@@ -180,6 +180,20 @@ class ArTranslations {
     'ACCOUNT_UPGRADED_SUCCESS': 'تمت ترقية الحساب بنجاح',
     'SUCCESS': 'نجاح',
 
+    // Lost Cars for Clients
+    'MY_LOST_CARS': 'سياراتي المفقودة',
+    'UPDATE_LOST_CAR': 'تحديث السيارة المفقودة',
+    'ADD_LOST_CAR': 'إضافة سيارة مفقودة',
+    'ADD_NEW_CAR': 'إضافة سيارة جديدة',
+    'NO_LOST_CARS': 'لا توجد سيارات مفقودة',
+    'REPORT_MISSING_CAR_HINT': 'لم تقم بالإبلاغ عن أي سيارة مفقودة بعد',
+    'LOST_CAR_UPDATE_SUCCESS': 'تم تحديث السيارة المفقودة بنجاح',
+    'LOST_CAR_UPDATE_ERROR': 'فشل في تحديث السيارة المفقودة',
+    'LOST_CAR_ADD_SUCCESS': 'تم إنشاء طلب السيارة المفقودة بنجاح',
+    'LOST_CAR_ADD_ERROR': 'فشل في إنشاء طلب السيارة المفقودة',
+    'ADDITIONAL_INFO': 'معلومات إضافية',
+    'MISSING_DATE': 'تاريخ الفقدان',
+
     // About App Page
     'VERSION': 'الإصدار',
     'APP_DESCRIPTION_TITLE': 'الوصف',

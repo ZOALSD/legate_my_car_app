@@ -1,5 +1,6 @@
 class MissingCarModel {
   final int id;
+  final String? originalRequestId; // Store original UUID string from API
   final String plateNumber;
   final String chassisNumber;
   final String brand;
@@ -18,6 +19,7 @@ class MissingCarModel {
 
   MissingCarModel({
     required this.id,
+    this.originalRequestId,
     required this.plateNumber,
     required this.chassisNumber,
     required this.brand,
