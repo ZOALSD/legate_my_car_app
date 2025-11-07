@@ -1,7 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:get/get_utils/get_utils.dart';
+import 'package:legate_my_car/config/app_flavor.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/car_model.dart';
 import 'car_form_view.dart';
@@ -45,16 +47,19 @@ class CarSingleView extends StatelessWidget {
         onPressed: () => Navigator.of(context).pop(),
       ),
       actions: [
-        IconButton(
-          icon: const Icon(Icons.edit, color: AppTheme.primaryColor),
-          onPressed: () => _editCar(context),
-          tooltip: 'EDIT_CAR'.tr,
+        Visibility(
+          visible: AppFlavorConfig.isManagers,
+          child: IconButton(
+            icon: const Icon(Icons.edit, color: AppTheme.primaryColor),
+            onPressed: () => _editCar(context),
+            tooltip: 'EDIT_CAR'.tr,
+          ),
         ),
-        IconButton(
-          icon: const Icon(Icons.share, color: Colors.black),
-          onPressed: () => _shareCar(context),
-          tooltip: 'SHARE_CAR'.tr,
-        ),
+        // IconButton(
+        //   icon: const Icon(Icons.share, color: Colors.black),
+        //   onPressed: () => _shareCar(context),
+        //   tooltip: 'SHARE_CAR'.tr,
+        // ),
       ],
     );
   }
@@ -128,7 +133,10 @@ class CarSingleView extends StatelessWidget {
         children: [
           _buildDetailRow('CHASSIS_NUMBER'.tr, car.chassisNumber ?? " - "),
           _buildDetailRow('PLATE_NUMBER'.tr, car.plateNumber ?? " - "),
-          _buildDetailRow('LOCATION'.tr, car.location ?? " - "),
+          Visibility(
+            visible: AppFlavorConfig.isManagers,
+            child: _buildDetailRow('LOCATION'.tr, car.location ?? " - "),
+          ),
           _buildDetailRow('BRAND'.tr, car.modelYear ?? " - "),
           _buildDetailRow('MODEL'.tr, car.model ?? " - "),
           _buildDetailRow('DESCRIPTION'.tr, car.description ?? " - "),
@@ -189,10 +197,21 @@ class CarSingleView extends StatelessWidget {
 
   Widget _buildFloatingActionButton(BuildContext context) {
     return FloatingActionButton.extended(
-      onPressed: () => _shareLocation(context),
-      icon: const Icon(Icons.location_on, color: Colors.white),
+      onPressed: () => {
+        if (AppFlavorConfig.isManagers)
+          {_shareLocation(context)}
+        else
+          {_contactUs(context)},
+      },
+      icon: AppFlavorConfig.isManagers
+          ? const Icon(Icons.location_on, color: Colors.white)
+          : SvgPicture.asset(
+              'assets/images/whatsapp.svg',
+              width: 30,
+              height: 30,
+            ),
       label: Text(
-        "SHARE_LOCATION".tr,
+        AppFlavorConfig.isManagers ? "SHARE_LOCATION".tr : "CONTACT_US".tr,
         style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
       ),
     );
@@ -200,6 +219,69 @@ class CarSingleView extends StatelessWidget {
 
   void _shareCar(BuildContext context) {
     // TODO: Implement share functionality
+  }
+
+  Future<void> _contactUs(BuildContext context) async {
+    const phoneNumber = '+971507632287'; //'+249900999000';
+    final chassisNumber = car.chassisNumber ?? '';
+
+    // Create message with chassis number and request text
+    final message = '${'CHASSIS_NUMBER'.tr}: $chassisNumber';
+    final encodedMessage = Uri.encodeComponent(message);
+
+    // Use platform-specific WhatsApp URL schemes
+    String whatsappUrl;
+    if (Platform.isIOS) {
+      // iOS WhatsApp URL scheme: whatsapp://send?phone=PHONE&text=MESSAGE
+      whatsappUrl = 'whatsapp://send?phone=$phoneNumber&text=$encodedMessage';
+    } else if (Platform.isAndroid) {
+      // Android WhatsApp URL scheme: https://wa.me/PHONE?text=MESSAGE
+      // Remove + from phone number for wa.me
+      final cleanPhone = phoneNumber.replaceAll('+', '');
+      whatsappUrl = 'https://wa.me/$cleanPhone?text=$encodedMessage';
+    } else {
+      // Fallback to web version
+      final cleanPhone = phoneNumber.replaceAll('+', '');
+      whatsappUrl = 'https://wa.me/$cleanPhone?text=$encodedMessage';
+    }
+
+    try {
+      final uri = Uri.parse(whatsappUrl);
+      bool launched = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
+
+      // If direct scheme fails, try web version as fallback
+      if (!launched && (Platform.isIOS || Platform.isAndroid)) {
+        final cleanPhone = phoneNumber.replaceAll('+', '');
+        final webWhatsappUrl = 'https://wa.me/$cleanPhone?text=$encodedMessage';
+        final webUri = Uri.parse(webWhatsappUrl);
+        launched = await launchUrl(
+          webUri,
+          mode: LaunchMode.externalApplication,
+        );
+      }
+
+      if (!launched && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('UNABLE_TO_OPEN_WHATSAPP'.tr),
+            backgroundColor: AppTheme.errorColor,
+          ),
+        );
+      }
+    } catch (e) {
+      // Handle platform exception or other errors
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('UNABLE_TO_OPEN_WHATSAPP'.tr),
+            backgroundColor: AppTheme.errorColor,
+          ),
+        );
+      }
+    }
   }
 
   void _editCar(BuildContext context) {

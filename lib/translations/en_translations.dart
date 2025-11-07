@@ -52,6 +52,7 @@ class EnTranslations {
     'CONTACT_OWNER': 'Contact Owner',
     'FULL_CAR_NAME': 'Full Car Name',
     'PHONE_NUMBER': 'Phone Number',
+    'CONTACT_US': 'Contact Us',
 
     // Car Information
     'PLATE': 'Plate',
@@ -81,6 +82,7 @@ class EnTranslations {
     'UNABLE_TO_OPEN_WHATSAPP':
         'Unable to open WhatsApp. Please make sure WhatsApp is installed.',
     'SHARE_LOCATION': 'Share Location',
+    'REQUEST_THIS_CAR': 'Request this car',
 
     // Success Messages
     'DATA_LOADED': 'Data loaded successfully',
@@ -177,6 +179,8 @@ class EnTranslations {
     // Account Page
     'NAME': 'Name',
     'EMAIL': 'Email',
+    'DEVELOPED_BY': 'Developed by',
+    'CONTACT_EMAIL': 'Contact Email',
     'ACCOUNT_TYPE': 'Account Type',
     'GUEST_USER': 'Guest User',
     'REGISTERED_USER': 'Registered User',

@@ -30,7 +30,7 @@ class CarApiService {
       };
 
       if (chassisNumber != null && chassisNumber.isNotEmpty) {
-        queryParams['chassis_number'] = chassisNumber;
+        queryParams['query'] = chassisNumber;
       }
 
       final endpoint = '/cars';

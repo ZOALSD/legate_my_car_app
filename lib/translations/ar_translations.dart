@@ -53,7 +53,7 @@ class ArTranslations {
     'CONTACT_OWNER': 'التواصل مع المالك',
     'FULL_CAR_NAME': 'اسم السيارة الكامل',
     'PHONE_NUMBER': 'رقم الهاتف',
-
+    'CONTACT_US': 'تواصل معنا',
     // Car Information
     'PLATE': 'اللوحة',
     'LAST_SEEN': 'آخر ظهور',
@@ -82,6 +82,7 @@ class ArTranslations {
     'UNABLE_TO_OPEN_WHATSAPP':
         'لا يمكن فتح واتساب. يرجى التأكد من تثبيت واتساب.',
     'SHARE_LOCATION': 'مشاركة الموقع',
+    'REQUEST_THIS_CAR': 'طلب هذه السيارة',
 
     // Success Messages
     'DATA_LOADED': 'تم تحميل البيانات بنجاح',
@@ -178,6 +179,8 @@ class ArTranslations {
     // Account Page
     'NAME': 'الاسم',
     'EMAIL': 'البريد الإلكتروني',
+    'DEVELOPED_BY': 'طور بواسطة',
+    'CONTACT_EMAIL': 'البريد الإلكتروني للتواصل',
     'ACCOUNT_TYPE': 'نوع الحساب',
     'GUEST_USER': 'مستخدم ضيف',
     'REGISTERED_USER': 'مستخدم مسجل',
