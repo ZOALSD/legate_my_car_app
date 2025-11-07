@@ -41,6 +41,13 @@ class ArTranslations {
     'STATUS': 'الحالة',
     'LOST_DATE': 'تاريخ الفقدان',
     'LOCATION': 'الموقع',
+    'ENTER_PLATE_NUMBER': 'أدخل رقم اللوحة',
+    'ENTER_CHASSIS_NUMBER': 'أدخل رقم الهيكل',
+    'ENTER_CAR_NAME': 'أدخل اسم السيارة',
+    'ENTER_MODEL': 'أدخل الموديل',
+    'ENTER_COLOR': 'أدخل اللون',
+    'ENTER_LOCATION': 'أدخل الموقع',
+    'PLEASE_ENTER_LOCATION': 'الرجاء إدخال الموقع',
     'CONTACT': 'التواصل',
     'DESCRIPTION': 'الوصف',
     'CONTACT_OWNER': 'التواصل مع المالك',
@@ -163,6 +170,10 @@ class ArTranslations {
     'LOGOUT': 'تسجيل الخروج',
     'LOGOUT_CONFIRM': 'هل أنت متأكد من أنك تريد تسجيل الخروج؟',
     'CANCEL': 'إلغاء',
+    'LOGIN_REQUIRED': 'يجب عليك تسجيل الدخول للمتابعة',
+    'LOGIN_REQUIRED_MESSAGE':
+        'يجب عليك تسجيل الدخول لتمكين رفع سيارات مفقودة والحصول على إشعارات عندما تم العثور عليها',
+    'LOGIN': 'تسجيل الدخول',
 
     // Account Page
     'NAME': 'الاسم',

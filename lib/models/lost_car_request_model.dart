@@ -5,6 +5,7 @@ class LostCarRequestModel {
   final int requestNumber;
   final String chassisNumber;
   final String plateNumber;
+  final String? carName;
   final String model;
   final String color;
   final String lastKnownLocation;
@@ -16,6 +17,7 @@ class LostCarRequestModel {
     required this.requestNumber,
     required this.chassisNumber,
     required this.plateNumber,
+    this.carName,
     required this.model,
     required this.color,
     required this.lastKnownLocation,
@@ -29,6 +31,7 @@ class LostCarRequestModel {
       requestNumber: json['request_number'] ?? 0,
       chassisNumber: json['chassis_number'] ?? '',
       plateNumber: json['plate_number'] ?? '',
+      carName: json['car_name'],
       model: json['model'] ?? '',
       color: json['color'] ?? '',
       lastKnownLocation: json['last_known_location'] ?? '',
@@ -43,10 +46,9 @@ class LostCarRequestModel {
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
-      'request_number': requestNumber,
       'chassis_number': chassisNumber,
       'plate_number': plateNumber,
+      if (carName != null) 'car_name': carName,
       'model': model,
       'color': color,
       'last_known_location': lastKnownLocation,
@@ -68,7 +70,7 @@ class LostCarRequestModel {
       originalRequestId: id, // Store original UUID string
       plateNumber: plateNumber,
       chassisNumber: chassisNumber,
-      brand: '', // Not available in API
+      brand: carName ?? '', // Use car_name if available
       model: model,
       color: color,
       description: '', // Not available in API

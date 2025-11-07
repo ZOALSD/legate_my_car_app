@@ -226,6 +226,7 @@ class MissingCarViewModel extends GetxController {
     required String plateNumber,
     required String chassisNumber,
     required String brand,
+    String? carName,
     required String model,
     required String color,
     required String description,
@@ -255,11 +256,12 @@ class MissingCarViewModel extends GetxController {
       }
 
       // Call API to update lost car request
-      // Note: API only accepts: chassis_number, plate_number, model, color, last_known_location
+      // Note: API accepts: chassis_number, plate_number, car_name, model, color, last_known_location
       final updatedRequest = await LostCarRequestService.updateLostCarRequest(
         id: car.originalRequestId!,
         chassisNumber: chassisNumber,
         plateNumber: plateNumber,
+        carName: carName,
         model: model,
         color: color,
         lastKnownLocation: lastKnownLocation,
@@ -274,7 +276,9 @@ class MissingCarViewModel extends GetxController {
         originalRequestId: updatedRequest.id, // Keep the UUID
         plateNumber: updatedCar.plateNumber,
         chassisNumber: updatedCar.chassisNumber,
-        brand: car.brand, // Not in API, keep original
+        brand:
+            updatedRequest.carName ??
+            car.brand, // Use car_name from API if available, otherwise keep original
         model: updatedCar.model,
         color: updatedCar.color,
         description: car.description, // Not in API, keep original
@@ -310,6 +314,7 @@ class MissingCarViewModel extends GetxController {
   Future<bool> createLostCarRequest({
     required String plateNumber,
     required String chassisNumber,
+    String? carName,
     required String model,
     required String color,
     required String lastKnownLocation,
@@ -322,6 +327,7 @@ class MissingCarViewModel extends GetxController {
       final createdRequest = await LostCarRequestService.createLostCarRequest(
         chassisNumber: chassisNumber,
         plateNumber: plateNumber,
+        carName: carName,
         model: model,
         color: color,
         lastKnownLocation: lastKnownLocation,

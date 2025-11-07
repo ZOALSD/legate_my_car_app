@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:legate_my_car/config/app_flavor.dart';
 import 'package:legate_my_car/models/car_model.dart';
 import 'package:legate_my_car/services/auth_service.dart';
+import 'package:legate_my_car/views/car_list_view.dart';
 import 'package:legate_my_car/views/login_view.dart';
 
 import 'car_form_view.dart';
@@ -37,8 +38,16 @@ class MenuView extends StatelessWidget {
 
     if (!context.mounted) return;
 
+    // Check if user is logged in and not a guest
+    final user = await AuthService.getCurrentUser();
+    final isLoggedIn = user != null && !user.isGuest;
+
+    // Check context again after async operation
+    if (!context.mounted) return;
+
+    final overlayContext = Overlay.of(context);
     final RenderBox? overlay =
-        Overlay.of(context).context.findRenderObject() as RenderBox?;
+        overlayContext.context.findRenderObject() as RenderBox?;
     final RenderBox? buttonBox = context.findRenderObject() as RenderBox?;
 
     if (overlay == null || buttonBox == null || !buttonBox.hasSize) return;
@@ -97,16 +106,18 @@ class MenuView extends StatelessWidget {
             ],
           ),
         ),
-        PopupMenuItem<String>(
-          value: 'logout',
-          child: Row(
-            children: [
-              const Icon(Icons.logout, color: Colors.grey),
-              const SizedBox(width: 10),
-              Text('LOGOUT'.tr),
-            ],
+        // Show logout only if user is logged in (not guest)
+        if (isLoggedIn)
+          PopupMenuItem<String>(
+            value: 'logout',
+            child: Row(
+              children: [
+                const Icon(Icons.logout, color: Colors.grey),
+                const SizedBox(width: 10),
+                Text('LOGOUT'.tr),
+              ],
+            ),
           ),
-        ),
       ],
     );
 
@@ -170,14 +181,21 @@ class MenuView extends StatelessWidget {
     if (confirmLogout == true) {
       // Perform logout
       await AuthService.logout();
-
-      // Navigate to login view and clear navigation stack
-      if (context.mounted) {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => const LoginView()),
-          (route) => false,
-        );
+      if ((context.mounted)) {
+        if (AppFlavorConfig.isClients) {
+          // Redirect list view
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => CarListView()),
+            (route) => false,
+          );
+        } else {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => const LoginView()),
+            (route) => false,
+          );
+        }
       }
     }
   }

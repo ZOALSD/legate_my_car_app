@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import '../models/missing_car_model.dart';
 import '../viewmodels/missing_car_viewmodel.dart';
 import '../theme/app_theme.dart';
-import 'location_picker_view.dart';
 
 class LostCarFormView extends StatefulWidget {
   final MissingCarModel? car; // null for create, non-null for update
@@ -18,13 +17,12 @@ class _LostCarFormViewState extends State<LostCarFormView> {
   final _formKey = GlobalKey<FormState>();
   final _plateNumberController = TextEditingController();
   final _chassisNumberController = TextEditingController();
+  final _carNameController = TextEditingController();
   final _modelController = TextEditingController();
   final _colorController = TextEditingController();
   final _locationController = TextEditingController();
 
   bool _isLoading = false;
-  double? _selectedLatitude;
-  double? _selectedLongitude;
 
   bool get isUpdateMode => widget.car != null;
 
@@ -32,7 +30,10 @@ class _LostCarFormViewState extends State<LostCarFormView> {
   void initState() {
     super.initState();
     if (isUpdateMode) {
-      _populateFormFields();
+      // Use addPostFrameCallback to ensure UI is ready before setting text
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _populateFormFields();
+      });
     }
   }
 
@@ -40,15 +41,23 @@ class _LostCarFormViewState extends State<LostCarFormView> {
     final car = widget.car!;
     _plateNumberController.text = car.plateNumber;
     _chassisNumberController.text = car.chassisNumber;
+    _carNameController.text = car.brand; // Use brand as car name
     _modelController.text = car.model;
     _colorController.text = car.color;
-    _locationController.text = car.lastKnownLocation;
+
+    // Set location text if available and trigger rebuild
+    if (car.lastKnownLocation.isNotEmpty) {
+      setState(() {
+        _locationController.text = car.lastKnownLocation;
+      });
+    }
   }
 
   @override
   void dispose() {
     _plateNumberController.dispose();
     _chassisNumberController.dispose();
+    _carNameController.dispose();
     _modelController.dispose();
     _colorController.dispose();
     _locationController.dispose();
@@ -99,32 +108,44 @@ class _LostCarFormViewState extends State<LostCarFormView> {
                       _buildTextField(
                         controller: _plateNumberController,
                         label: 'PLATE_NUMBER'.tr,
-                        hint: 'Enter plate number',
+                        hint: 'ENTER_PLATE_NUMBER'.tr,
                         required: true,
                       ),
                       const SizedBox(height: 16),
                       _buildTextField(
                         controller: _chassisNumberController,
                         label: 'CHASSIS_NUMBER'.tr,
-                        hint: 'Enter chassis number',
+                        hint: 'ENTER_CHASSIS_NUMBER'.tr,
                         required: true,
+                      ),
+                      const SizedBox(height: 16),
+                      _buildTextField(
+                        controller: _carNameController,
+                        label: 'CAR_NAME'.tr,
+                        hint: 'ENTER_CAR_NAME'.tr,
+                        required: false,
                       ),
                       const SizedBox(height: 16),
                       _buildTextField(
                         controller: _modelController,
                         label: 'MODEL'.tr,
-                        hint: 'Enter model',
+                        hint: 'ENTER_MODEL'.tr,
                         required: true,
                       ),
                       const SizedBox(height: 16),
                       _buildTextField(
                         controller: _colorController,
                         label: 'COLOR'.tr,
-                        hint: 'Enter color',
+                        hint: 'ENTER_COLOR'.tr,
                         required: true,
                       ),
                       const SizedBox(height: 16),
-                      _buildLocationField(),
+                      _buildTextField(
+                        controller: _locationController,
+                        label: 'LOCATION'.tr,
+                        hint: 'ENTER_LOCATION'.tr,
+                        required: true,
+                      ),
                     ],
                   ),
                 ),
@@ -157,7 +178,9 @@ class _LostCarFormViewState extends State<LostCarFormView> {
                           ),
                         )
                       : Text(
-                          isUpdateMode ? 'UPDATE_LOST_CAR'.tr : 'ADD_LOST_CAR'.tr,
+                          isUpdateMode
+                              ? 'UPDATE_LOST_CAR'.tr
+                              : 'ADD_LOST_CAR'.tr,
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -232,76 +255,16 @@ class _LostCarFormViewState extends State<LostCarFormView> {
     );
   }
 
-  Widget _buildLocationField() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'LAST_KNOWN_LOCATION'.tr + ' *',
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: AppTheme.textPrimaryColor,
-          ),
-        ),
-        const SizedBox(height: 8),
-        InkWell(
-          onTap: () async {
-            final result = await Get.to(
-              () => LocationPickerView(
-                initialLatitude: _selectedLatitude,
-                initialLongitude: _selectedLongitude,
-              ),
-            );
-
-            if (result != null) {
-              setState(() {
-                _selectedLatitude = result['latitude'];
-                _selectedLongitude = result['longitude'];
-                _locationController.text = result['address'] ?? '';
-              });
-            }
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade50,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppTheme.primaryColor),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    _locationController.text.isEmpty
-                        ? 'Tap to pick location'
-                        : _locationController.text,
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: _locationController.text.isEmpty
-                          ? Colors.grey.shade600
-                          : Colors.black,
-                    ),
-                  ),
-                ),
-                const Icon(Icons.location_on, color: AppTheme.primaryColor),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
-    if (_locationController.text.isEmpty || _selectedLatitude == null) {
+    // Validate location: text is required
+    if (_locationController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Please select a location'.tr),
+          content: Text('PLEASE_ENTER_LOCATION'.tr),
           backgroundColor: AppTheme.errorColor,
           behavior: SnackBarBehavior.fixed,
         ),
@@ -324,13 +287,22 @@ class _LostCarFormViewState extends State<LostCarFormView> {
           plateNumber: _plateNumberController.text.trim(),
           chassisNumber: _chassisNumberController.text.trim(),
           brand: widget.car!.brand, // Keep original brand (not sent to API)
+          carName: _carNameController.text.trim().isEmpty
+              ? null
+              : _carNameController.text.trim(),
           model: _modelController.text.trim(),
           color: _colorController.text.trim(),
-          description: widget.car!.description, // Keep original description (not sent to API)
+          description: widget
+              .car!
+              .description, // Keep original description (not sent to API)
           lastKnownLocation: _locationController.text.trim(),
-          contactInfo: widget.car!.contactInfo, // Keep original contactInfo (not sent to API)
+          contactInfo: widget
+              .car!
+              .contactInfo, // Keep original contactInfo (not sent to API)
           status: widget.car!.status, // Keep original status (not sent to API)
-          rewardAmount: widget.car!.rewardAmount, // Keep original rewardAmount (not sent to API)
+          rewardAmount: widget
+              .car!
+              .rewardAmount, // Keep original rewardAmount (not sent to API)
           imageFile: null, // Image not supported by API
         );
       } else {
@@ -338,6 +310,9 @@ class _LostCarFormViewState extends State<LostCarFormView> {
         success = await viewModel.createLostCarRequest(
           plateNumber: _plateNumberController.text.trim(),
           chassisNumber: _chassisNumberController.text.trim(),
+          carName: _carNameController.text.trim().isEmpty
+              ? null
+              : _carNameController.text.trim(),
           model: _modelController.text.trim(),
           color: _colorController.text.trim(),
           lastKnownLocation: _locationController.text.trim(),

@@ -64,6 +64,7 @@ class LostCarRequestService {
     required String id,
     required String chassisNumber,
     required String plateNumber,
+    String? carName,
     required String model,
     required String color,
     required String lastKnownLocation,
@@ -82,6 +83,7 @@ class LostCarRequestService {
       final requestData = {
         'chassis_number': chassisNumber,
         'plate_number': plateNumber,
+        if (carName != null && carName.isNotEmpty) 'car_name': carName,
         'model': model,
         'color': color,
         'last_known_location': lastKnownLocation,
@@ -129,6 +131,7 @@ class LostCarRequestService {
   static Future<LostCarRequestModel> createLostCarRequest({
     required String chassisNumber,
     required String plateNumber,
+    String? carName,
     required String model,
     required String color,
     required String lastKnownLocation,
@@ -147,6 +150,7 @@ class LostCarRequestService {
       final requestData = {
         'chassis_number': chassisNumber,
         'plate_number': plateNumber,
+        if (carName != null && carName.isNotEmpty) 'car_name': carName,
         'model': model,
         'color': color,
         'last_known_location': lastKnownLocation,

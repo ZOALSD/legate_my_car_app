@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:legate_my_car/utils/getOrCreatedd.dart';
+import 'package:legate_my_car/widgets/google_sign_in_button.dart';
 import '../viewmodels/missing_car_viewmodel.dart';
 import '../models/missing_car_model.dart';
 import '../theme/app_theme.dart';
 import 'lost_car_form_view.dart';
-import 'login_view.dart';
 
 class MyLostCarsView extends StatefulWidget {
   const MyLostCarsView({super.key});
@@ -24,56 +24,9 @@ class _MyLostCarsViewState extends State<MyLostCarsView> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
-    // Show login dialog if guest after a delay
+    // Refresh guest check when view is opened (useful after login)
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkAndShowLoginDialog();
-    });
-  }
-
-  void _checkAndShowLoginDialog() {
-    // Listen to guest status changes
-    ever(viewModel.isGuest, (bool isGuest) {
-      if (isGuest && !viewModel.isCheckingGuest.value) {
-        _showLoginRequiredDialog();
-      }
-    });
-
-    // Also check immediately if already guest
-    if (viewModel.isGuest.value && !viewModel.isCheckingGuest.value) {
-      _showLoginRequiredDialog();
-    }
-  }
-
-  void _showLoginRequiredDialog() {
-    Future.delayed(const Duration(milliseconds: 300), () {
-      if (!mounted || !viewModel.isGuest.value) return;
-      Get.dialog(
-        AlertDialog(
-          title: Text('LOGIN_REQUIRED'.tr),
-          content: Text('GUEST_LOGIN_REQUIRED_MESSAGE'.tr),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Get.back(); // Close dialog
-                Get.back(); // Go back from this page
-              },
-              child: Text('CANCEL'.tr),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Get.back(); // Close dialog
-                Get.to(() => const LoginView());
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryColor,
-                foregroundColor: AppTheme.sudanWhite,
-              ),
-              child: Text('LOGIN'.tr),
-            ),
-          ],
-        ),
-        barrierDismissible: false,
-      );
+      viewModel.refreshGuestCheck();
     });
   }
 
@@ -94,12 +47,6 @@ class _MyLostCarsViewState extends State<MyLostCarsView> {
   }
 
   void _navigateToAddNewCar() {
-    // Check if user is guest
-    if (viewModel.isGuest.value) {
-      _showLoginRequiredDialog();
-      return;
-    }
-
     // Navigate to add new car form (null car means create mode)
     Get.to(() => const LostCarFormView(car: null))?.then((result) {
       if (result == true) {
@@ -168,45 +115,46 @@ class _MyLostCarsViewState extends State<MyLostCarsView> {
             elevation: 2,
             centerTitle: true,
           ),
-          body: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.login, size: 64, color: AppTheme.textSecondaryColor),
-                const SizedBox(height: 16),
-                Text(
-                  'LOGIN_REQUIRED'.tr,
-                  style: const TextStyle(
-                    color: AppTheme.textPrimaryColor,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'GUEST_LOGIN_REQUIRED_MESSAGE'.tr,
-                  style: const TextStyle(
+          body: Padding(
+            padding: const EdgeInsets.all(25),
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.login,
+                    size: 64,
                     color: AppTheme.textSecondaryColor,
-                    fontSize: 14,
                   ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: () {
-                    Get.to(() => const LoginView());
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryColor,
-                    foregroundColor: AppTheme.sudanWhite,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 32,
-                      vertical: 12,
+                  const SizedBox(height: 16),
+                  Text(
+                    'LOGIN_REQUIRED'.tr,
+                    style: const TextStyle(
+                      color: AppTheme.textPrimaryColor,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
-                  child: Text('LOGIN'.tr),
-                ),
-              ],
+                  const SizedBox(height: 8),
+                  Text(
+                    'LOGIN_REQUIRED_MESSAGE'.tr,
+                    style: const TextStyle(
+                      color: AppTheme.textSecondaryColor,
+                      fontSize: 14,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 35),
+                    child: GoogleSignInButton(
+                      showAsOutline: false,
+                      padding: EdgeInsets.zero,
+                      redirectToMyLostCars: true,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         );

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:legate_my_car/views/my_lost_cars_view.dart';
 import '../services/auth_service.dart';
 import '../views/car_list_view.dart';
 import '../utils/translation_helper.dart';
@@ -8,10 +9,12 @@ import '../utils/translation_helper.dart';
 class GoogleSignInButton extends StatefulWidget {
   final bool showAsOutline;
   final EdgeInsets? padding;
+  final bool redirectToMyLostCars;
 
   const GoogleSignInButton({
     super.key,
     this.showAsOutline = false,
+    this.redirectToMyLostCars = false,
     this.padding,
   });
 
@@ -34,11 +37,17 @@ class _GoogleSignInButtonState extends State<GoogleSignInButton> {
 
       if (mounted) {
         if (success) {
-          // Navigate to main screen
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const CarListView()),
-          );
+          // Close any open dialogs first
+          if (Get.isDialogOpen == true) {
+            Get.back();
+          }
+
+          // Navigate to main screen using GetX
+          if (widget.redirectToMyLostCars) {
+            Get.offAll(() => const MyLostCarsView());
+          } else {
+            Get.offAll(() => const CarListView());
+          }
 
           // Show success message
           TranslationHelper.showSuccessSnackBar(

@@ -40,6 +40,13 @@ class EnTranslations {
     'STATUS': 'Status',
     'LOST_DATE': 'Lost Date',
     'LOCATION': 'Location',
+    'ENTER_PLATE_NUMBER': 'Enter plate number',
+    'ENTER_CHASSIS_NUMBER': 'Enter chassis number',
+    'ENTER_CAR_NAME': 'Enter car name',
+    'ENTER_MODEL': 'Enter model',
+    'ENTER_COLOR': 'Enter color',
+    'ENTER_LOCATION': 'Enter location',
+    'PLEASE_ENTER_LOCATION': 'Please enter a location',
     'CONTACT': 'Contact',
     'DESCRIPTION': 'Description',
     'CONTACT_OWNER': 'Contact Owner',
@@ -162,6 +169,10 @@ class EnTranslations {
     'LOGOUT': 'Logout',
     'LOGOUT_CONFIRM': 'Are you sure you want to logout?',
     'CANCEL': 'Cancel',
+    'LOGIN_REQUIRED': 'Login Required',
+    'LOGIN_REQUIRED_MESSAGE':
+        'You need to login to enable uploading lost cars and receiving notifications when they are found',
+    'LOGIN': 'Login',
 
     // Account Page
     'NAME': 'Name',
