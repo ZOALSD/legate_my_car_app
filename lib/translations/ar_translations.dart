@@ -228,6 +228,7 @@ class ArTranslations {
     'DEVELOPED_FOR': 'مطوّر لـ',
     'COPYRIGHT': 'جميع الحقوق محفوظة',
     'AHMED_MOHAMED': 'أحمد محمد',
+    'ACCOUNT_DELETED_SUCCESSFULLY': 'تم حذف الحساب بنجاح',
 
     // Launcher Screen
     'SKIP': 'تخطي',

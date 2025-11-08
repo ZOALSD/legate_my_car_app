@@ -219,8 +219,7 @@ class EnTranslations {
     'DELETE_ACCOUNT_SUCCESS': 'Your account has been deleted successfully.',
     'DELETE_ACCOUNT_ERROR':
         'Failed to delete the account. Please try again later.',
-    'DELETE_ACCOUNT_OFFLINE':
-        'Connect to the internet to delete your account.',
+    'DELETE_ACCOUNT_OFFLINE': 'Connect to the internet to delete your account.',
 
     // About App Page
     'VERSION': 'Version',
@@ -230,6 +229,7 @@ class EnTranslations {
     'DEVELOPED_FOR': 'Developed For',
     'COPYRIGHT': 'All rights reserved',
     'AHMED_MOHAMED': 'Ahmed Mohammed',
+    'ACCOUNT_DELETED_SUCCESSFULLY': 'Account deleted successfully',
 
     // Launcher Screen
     'SKIP': 'Skip',
