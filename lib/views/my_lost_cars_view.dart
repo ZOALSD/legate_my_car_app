@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:legate_my_car/models/enums/lost_status.dart';
+import 'package:legate_my_car/models/lost_car_model.dart';
 import 'package:legate_my_car/utils/getOrCreatedd.dart';
 import 'package:legate_my_car/widgets/google_sign_in_button.dart';
 import '../viewmodels/missing_car_viewmodel.dart';
-import '../models/missing_car_model.dart';
 import '../theme/app_theme.dart';
 import 'lost_car_form_view.dart';
 
@@ -41,7 +42,8 @@ class _MyLostCarsViewState extends State<MyLostCarsView> {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
       if (viewModel.hasMorePages.value && !viewModel.isLoading.value) {
-        viewModel.loadNextPage();
+        viewModel.currentPage.value++;
+        viewModel.loadMissingCars();
       }
     }
   }
@@ -301,7 +303,7 @@ class _MyLostCarsViewState extends State<MyLostCarsView> {
 }
 
 class MyLostCarCard extends StatelessWidget {
-  final MissingCarModel car;
+  final LostCarModel car;
   final MissingCarViewModel viewModel;
 
   const MyLostCarCard({super.key, required this.car, required this.viewModel});
@@ -317,13 +319,15 @@ class MyLostCarCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header with status and edit button
+            // Header with status badge
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
                   child: Text(
-                    car.fullCarName,
+                    (car.carName?.isNotEmpty ?? false)
+                        ? car.carName!
+                        : car.plateNumber ?? '',
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -331,58 +335,22 @@ class MyLostCarCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryColor,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    car.status.tr,
-                    style: const TextStyle(
-                      color: AppTheme.sudanWhite,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
+                if (car.status != null) ...[
+                  const SizedBox(width: 12),
+                  _StatusBadge(status: car.status!),
+                ],
               ],
             ),
             const SizedBox(height: 12),
 
             // Car details
-            _buildDetailRow('PLATE_NUMBER'.tr, car.plateNumber),
-            _buildDetailRow('COLOR'.tr, car.color),
-            _buildDetailRow('LAST_KNOWN_LOCATION'.tr, car.lastKnownLocation),
-            _buildDetailRow('MISSING_DATE'.tr, car.formattedMissingDate),
-
-            if (car.hasReward)
-              _buildDetailRow('REWARD_AMOUNT'.tr, car.rewardAmount!),
-
-            const SizedBox(height: 12),
-
-            // Description
-            if (car.description.isNotEmpty) ...[
-              Text(
-                'DESCRIPTION'.tr,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w600,
-                  color: AppTheme.textPrimaryColor,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                car.description,
-                style: const TextStyle(
-                  color: AppTheme.textSecondaryColor,
-                  fontSize: 14,
-                ),
-              ),
-              const SizedBox(height: 12),
-            ],
+            _buildDetailRow('PLATE_NUMBER'.tr, car.plateNumber ?? ''),
+            _buildDetailRow('COLOR'.tr, car.color ?? ''),
+            _buildDetailRow(
+              'LAST_KNOWN_LOCATION'.tr,
+              car.lastKnownLocation ?? '',
+            ),
+            _buildDetailRow('PHONE_NUMBER'.tr, car.phoneNumber ?? ''),
 
             // Update button
             SizedBox(
@@ -432,6 +400,58 @@ class MyLostCarCard extends StatelessWidget {
             child: Text(
               value,
               style: const TextStyle(color: AppTheme.textSecondaryColor),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatusBadge extends StatelessWidget {
+  final LostStatus status;
+
+  const _StatusBadge({required this.status});
+
+  @override
+  Widget build(BuildContext context) {
+    Color backgroundColor;
+    Color textColor;
+
+    switch (status) {
+      case LostStatus.lost:
+        backgroundColor = AppTheme.errorColor.withValues(alpha: 0.14);
+        textColor = AppTheme.errorColor;
+        break;
+      case LostStatus.found:
+        backgroundColor = Colors.green.withValues(alpha: 0.12);
+        textColor = Colors.green.shade700;
+        break;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: textColor.withValues(alpha: 0.4), width: 1),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            status == LostStatus.found ? Icons.check_circle : Icons.error,
+            size: 16,
+            color: textColor,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            status.translatedStatus,
+            style: TextStyle(
+              color: textColor,
+              fontWeight: FontWeight.w600,
+              fontSize: 12,
+              letterSpacing: 0.3,
             ),
           ),
         ],

@@ -1,14 +1,14 @@
 import 'package:dio/dio.dart';
 import 'package:get/get_utils/get_utils.dart';
+import 'package:legate_my_car/models/api_response_model.dart';
 import 'package:legate_my_car/services/dio_service.dart';
 import 'package:legate_my_car/utils/connection_helper.dart';
-import '../models/api_response_model.dart';
-import '../models/lost_car_request_model.dart';
+import '../models/lost_car_model.dart';
 
 class LostCarRequestService {
   static final dio = DioService.instance;
 
-  static Future<LostCarRequestsApiResponse> getLostCarRequests({
+  static Future<ListResponseModel<LostCarModel>> getLostCarRequests({
     int page = 1,
     int perPage = 10,
   }) async {
@@ -31,14 +31,12 @@ class LostCarRequestService {
       // Use DioService which has interceptor configured
       final response = await dio.get(endpoint, queryParameters: queryParams);
 
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> jsonData = response.data;
-        return LostCarRequestsApiResponse.fromJson(jsonData);
-      } else {
-        throw Exception(
-          'Failed to load lost car requests: ${response.statusCode}',
-        );
-      }
+      final listResponse = ListResponseModel.fromJson(
+        response.data as Map<String, dynamic>,
+        (data) => LostCarModel.fromJson(data),
+      );
+
+      return listResponse;
     } on DioException catch (e) {
       // Handle specific DioException types
       if (e.type == DioExceptionType.connectionTimeout) {
@@ -60,14 +58,8 @@ class LostCarRequestService {
   }
 
   /// Update a lost car request
-  static Future<LostCarRequestModel> updateLostCarRequest({
-    required String id,
-    required String chassisNumber,
-    required String plateNumber,
-    String? carName,
-    required String model,
-    required String color,
-    required String lastKnownLocation,
+  static Future<LostCarModel> updateLostCarRequest({
+    required LostCarModel lostCar,
   }) async {
     try {
       // Check internet connection first
@@ -77,36 +69,13 @@ class LostCarRequestService {
         throw Exception("NO_INTERNET_CONNECTION".tr);
       }
 
-      final endpoint = '/lost-car-requests/$id';
-
-      // Prepare request body
-      final requestData = {
-        'chassis_number': chassisNumber,
-        'plate_number': plateNumber,
-        if (carName != null && carName.isNotEmpty) 'car_name': carName,
-        'model': model,
-        'color': color,
-        'last_known_location': lastKnownLocation,
-      };
+      final endpoint = '/lost-car-requests/${lostCar.id}';
 
       // Use DioService which has interceptor configured
-      final response = await dio.put(endpoint, data: requestData);
+      final response = await dio.put(endpoint, data: lostCar.toJson());
 
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> jsonData = response.data;
-        // API might return the updated request in data field or directly
-        if (jsonData.containsKey('data')) {
-          return LostCarRequestModel.fromJson(
-            jsonData['data'] as Map<String, dynamic>,
-          );
-        } else {
-          return LostCarRequestModel.fromJson(jsonData);
-        }
-      } else {
-        throw Exception(
-          'Failed to update lost car request: ${response.statusCode}',
-        );
-      }
+      final dynamic body = response.data;
+      return LostCarModel.fromJson(body);
     } on DioException catch (e) {
       // Handle specific DioException types
       if (e.type == DioExceptionType.connectionTimeout) {
@@ -128,13 +97,8 @@ class LostCarRequestService {
   }
 
   /// Create a new lost car request
-  static Future<LostCarRequestModel> createLostCarRequest({
-    required String chassisNumber,
-    required String plateNumber,
-    String? carName,
-    required String model,
-    required String color,
-    required String lastKnownLocation,
+  static Future<LostCarModel> createLostCarRequest({
+    required LostCarModel lostCar,
   }) async {
     try {
       // Check internet connection first
@@ -146,33 +110,14 @@ class LostCarRequestService {
 
       final endpoint = '/lost-car-requests';
 
-      // Prepare request body
-      final requestData = {
-        'chassis_number': chassisNumber,
-        'plate_number': plateNumber,
-        if (carName != null && carName.isNotEmpty) 'car_name': carName,
-        'model': model,
-        'color': color,
-        'last_known_location': lastKnownLocation,
-      };
-
       // Use DioService which has interceptor configured
-      final response = await dio.post(endpoint, data: requestData);
+      final response = await dio.post(endpoint, data: lostCar.toJson());
 
-      if (response.statusCode == 201 || response.statusCode == 200) {
-        final Map<String, dynamic> jsonData = response.data;
-        // API might return the created request in data field or directly
-        if (jsonData.containsKey('data')) {
-          return LostCarRequestModel.fromJson(
-            jsonData['data'] as Map<String, dynamic>,
-          );
-        } else {
-          return LostCarRequestModel.fromJson(jsonData);
-        }
+      final dynamic body = response.data;
+      if (body['success']) {
+        return LostCarModel.fromJson(body['data']);
       } else {
-        throw Exception(
-          'Failed to create lost car request: ${response.statusCode}',
-        );
+        throw Exception(body['message']);
       }
     } on DioException catch (e) {
       // Handle specific DioException types

@@ -47,6 +47,7 @@ dependencies:
 
   # Secure storage
   flutter_secure_storage: ^9.2.4
+  shared_preferences: ^2.3.3
 
   # Date formatting
   intl: ^0.20.2

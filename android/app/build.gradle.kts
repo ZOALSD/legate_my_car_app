@@ -33,13 +33,13 @@ android {
         create("managers") {
             dimension = "app"
             applicationId = "com.laqeetarabeety.managers"
-            resValue("string", "app_name", "لقيت عربيتي - Managers")
+            resValue("string", "app_name", "لقيت عربيتي - المشرفين")
             resValue("string", "app_flavor", "managers")
         }
         create("clients") {
             dimension = "app"
             applicationId = "com.laqeetarabeety.clinets"
-            resValue("string", "app_name", "لقيت عربيتي - Clients")
+            resValue("string", "app_name", "لقيت عربيتي")
             resValue("string", "app_flavor", "clients")
         }
     }

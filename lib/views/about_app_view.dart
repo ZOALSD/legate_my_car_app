@@ -138,7 +138,7 @@ class AboutAppView extends StatelessWidget {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                'Ahmed Mohammed',
+                                'AHMED_MOHAMED'.tr,
                                 style: Theme.of(context).textTheme.titleMedium
                                     ?.copyWith(fontWeight: FontWeight.bold),
                               ),

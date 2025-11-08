@@ -24,10 +24,8 @@ class EnTranslations {
     'REFRESH': 'Refresh',
 
     // Car Status
-    'STATUS_ALL': 'All',
     'STATUS_LOST': 'Lost',
     'STATUS_FOUND': 'Found',
-    'STATUS_RECOVERED': 'Recovered',
 
     // Car Details
     'CAR_DETAILS': 'Car Details',
@@ -52,6 +50,7 @@ class EnTranslations {
     'CONTACT_OWNER': 'Contact Owner',
     'FULL_CAR_NAME': 'Full Car Name',
     'PHONE_NUMBER': 'Phone Number',
+    'ENTER_PHONE_NUMBER': 'Enter phone number',
     'CONTACT_US': 'Contact Us',
 
     // Car Information
@@ -207,6 +206,8 @@ class EnTranslations {
     'LOST_CAR_ADD_ERROR': 'Failed to create lost car request',
     'ADDITIONAL_INFO': 'Additional Information',
     'MISSING_DATE': 'Missing Date',
+    'THIS_FIELD_IS_REQUIRED': 'This field is required',
+    'ARABIC_OR_ENGLISH_ONLY': 'Please use only Arabic or English characters.',
 
     // About App Page
     'VERSION': 'Version',
@@ -215,5 +216,16 @@ class EnTranslations {
         'A Sudanese platform dedicated to helping citizens find their lost cars',
     'DEVELOPED_FOR': 'Developed For',
     'COPYRIGHT': 'All rights reserved',
+    'AHMED_MOHAMED': 'Ahmed Mohammed',
+
+    // Launcher Screen
+    'SKIP': 'Skip',
+    'GET_STARTED': 'Get Started',
+    'SEARCH_LOST_CAR': 'Search Lost Car',
+    'SEARCH_LOST_CAR_DESCRIPTION':
+        'Search through our database of lost cars by chassis number, plate number, or model to find your missing vehicle.',
+    'ADD_REQUEST': 'Add Request',
+    'ADD_REQUEST_DESCRIPTION':
+        'Report your lost car by adding a request with details like chassis number, plate number, model, and last known location.',
   };
 }

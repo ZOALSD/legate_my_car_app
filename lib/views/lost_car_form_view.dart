@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../models/missing_car_model.dart';
+import 'package:legate_my_car/models/enums/lost_status.dart';
+import 'package:legate_my_car/models/lost_car_model.dart';
 import '../viewmodels/missing_car_viewmodel.dart';
 import '../theme/app_theme.dart';
 
 class LostCarFormView extends StatefulWidget {
-  final MissingCarModel? car; // null for create, non-null for update
+  final LostCarModel? car; // null for create, non-null for update
 
   const LostCarFormView({super.key, this.car});
 
@@ -20,7 +21,10 @@ class _LostCarFormViewState extends State<LostCarFormView> {
   final _carNameController = TextEditingController();
   final _modelController = TextEditingController();
   final _colorController = TextEditingController();
+  final _phoneNumberController = TextEditingController();
   final _locationController = TextEditingController();
+
+  LostStatus? _selectedStatus;
 
   bool _isLoading = false;
 
@@ -38,20 +42,36 @@ class _LostCarFormViewState extends State<LostCarFormView> {
   }
 
   void _populateFormFields() {
-    final car = widget.car!;
-    _plateNumberController.text = car.plateNumber;
-    _chassisNumberController.text = car.chassisNumber;
-    _carNameController.text = car.brand; // Use brand as car name
-    _modelController.text = car.model;
-    _colorController.text = car.color;
+    final lostCar = widget.car!;
+    _plateNumberController.text = lostCar.plateNumber ?? '';
+    _chassisNumberController.text = lostCar.chassisNumber ?? '';
+    _carNameController.text = lostCar.carName ?? '';
+    _modelController.text = lostCar.model ?? '';
+    _colorController.text = lostCar.color ?? '';
+    _phoneNumberController.text = lostCar.phoneNumber ?? '';
+    _locationController.text = lostCar.lastKnownLocation ?? '';
 
-    // Set location text if available and trigger rebuild
-    if (car.lastKnownLocation.isNotEmpty) {
+    if (mounted) {
       setState(() {
-        _locationController.text = car.lastKnownLocation;
+        _selectedStatus = lostCar.status;
       });
+    } else {
+      _selectedStatus = lostCar.status;
     }
   }
+
+  LostCarModel get lostCar => LostCarModel(
+    id: widget.car?.id,
+    requestNumber: widget.car?.requestNumber,
+    plateNumber: _plateNumberController.text.trim(),
+    chassisNumber: _chassisNumberController.text.trim(),
+    carName: _carNameController.text.trim(),
+    model: _modelController.text.trim(),
+    color: _colorController.text.trim(),
+    lastKnownLocation: _locationController.text.trim(),
+    phoneNumber: _phoneNumberController.text.trim(),
+    status: _selectedStatus,
+  );
 
   @override
   void dispose() {
@@ -60,7 +80,9 @@ class _LostCarFormViewState extends State<LostCarFormView> {
     _carNameController.dispose();
     _modelController.dispose();
     _colorController.dispose();
+    _phoneNumberController.dispose();
     _locationController.dispose();
+    _selectedStatus = null;
     super.dispose();
   }
 
@@ -110,6 +132,9 @@ class _LostCarFormViewState extends State<LostCarFormView> {
                         label: 'PLATE_NUMBER'.tr,
                         hint: 'ENTER_PLATE_NUMBER'.tr,
                         required: true,
+                        enforceLanguageRule: true,
+                        allowDigits: true,
+                        extraAllowedCharacters: '- ',
                       ),
                       const SizedBox(height: 16),
                       _buildTextField(
@@ -117,27 +142,42 @@ class _LostCarFormViewState extends State<LostCarFormView> {
                         label: 'CHASSIS_NUMBER'.tr,
                         hint: 'ENTER_CHASSIS_NUMBER'.tr,
                         required: true,
+                        enforceLanguageRule: true,
+                        allowDigits: true,
+                        extraAllowedCharacters: '- ',
                       ),
                       const SizedBox(height: 16),
                       _buildTextField(
                         controller: _carNameController,
                         label: 'CAR_NAME'.tr,
                         hint: 'ENTER_CAR_NAME'.tr,
-                        required: false,
+                        required: true,
+                        enforceLanguageRule: true,
                       ),
                       const SizedBox(height: 16),
                       _buildTextField(
                         controller: _modelController,
                         label: 'MODEL'.tr,
                         hint: 'ENTER_MODEL'.tr,
-                        required: true,
+                        required: false,
+                        enforceLanguageRule: true,
+                        allowDigits: true,
                       ),
                       const SizedBox(height: 16),
                       _buildTextField(
                         controller: _colorController,
                         label: 'COLOR'.tr,
                         hint: 'ENTER_COLOR'.tr,
+                        required: false,
+                        enforceLanguageRule: true,
+                      ),
+                      const SizedBox(height: 16),
+                      _buildTextField(
+                        controller: _phoneNumberController,
+                        label: 'PHONE_NUMBER'.tr,
+                        hint: 'ENTER_PHONE_NUMBER'.tr,
                         required: true,
+                        keyboardType: TextInputType.phone,
                       ),
                       const SizedBox(height: 16),
                       _buildTextField(
@@ -145,7 +185,62 @@ class _LostCarFormViewState extends State<LostCarFormView> {
                         label: 'LOCATION'.tr,
                         hint: 'ENTER_LOCATION'.tr,
                         required: true,
+                        enforceLanguageRule: true,
+                        allowDigits: true,
+                        extraAllowedCharacters: ',.-/',
                       ),
+
+                      if (isUpdateMode) ...[
+                        const SizedBox(height: 16),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Align(
+                            alignment: Alignment.topRight,
+                            child: Text(
+                              'STATUS'.tr,
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        DropdownButtonFormField<LostStatus>(
+                          initialValue: _selectedStatus,
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: Colors.grey.shade50,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                color: AppTheme.primaryColor,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                color: AppTheme.primaryColor,
+                                width: 2,
+                              ),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                          ),
+                          items: LostStatus.values
+                              .map(
+                                (status) => DropdownMenuItem(
+                                  value: status,
+                                  child: Text(status.translatedStatus),
+                                ),
+                              )
+                              .toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedStatus = value;
+                            });
+                          },
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -164,7 +259,7 @@ class _LostCarFormViewState extends State<LostCarFormView> {
                       borderRadius: BorderRadius.circular(14),
                     ),
                     elevation: 4,
-                    shadowColor: AppTheme.primaryColor.withOpacity(0.4),
+                    shadowColor: AppTheme.primaryColor.withValues(alpha: 0.4),
                   ),
                   child: _isLoading
                       ? const SizedBox(
@@ -222,10 +317,15 @@ class _LostCarFormViewState extends State<LostCarFormView> {
     required String hint,
     required bool required,
     int maxLines = 1,
+    TextInputType keyboardType = TextInputType.text,
+    bool enforceLanguageRule = false,
+    bool allowDigits = false,
+    String extraAllowedCharacters = '',
   }) {
     return TextFormField(
       controller: controller,
       maxLines: maxLines,
+      keyboardType: keyboardType,
       decoration: InputDecoration(
         labelText: label + (required ? ' *' : ''),
         hintText: hint,
@@ -244,31 +344,36 @@ class _LostCarFormViewState extends State<LostCarFormView> {
           vertical: 12,
         ),
       ),
-      validator: required
-          ? (value) {
-              if (value == null || value.isEmpty) {
-                return 'This field is required';
-              }
-              return null;
-            }
-          : null,
+      validator: (value) {
+        final input = value?.trim() ?? '';
+
+        if (required && input.isEmpty) {
+          return '${'THIS_FIELD_IS_REQUIRED'.tr} ${label.toUpperCase()}';
+        }
+
+        if (input.isEmpty) {
+          return null;
+        }
+
+        if (enforceLanguageRule &&
+            !_isArabicOrEnglish(
+              input,
+              allowDigits: allowDigits,
+              extraAllowedCharacters: extraAllowedCharacters,
+            )) {
+          return 'ARABIC_OR_ENGLISH_ONLY'.tr;
+        }
+
+        return null;
+      },
+      onChanged: (value) {
+        _formKey.currentState?.validate();
+      },
     );
   }
 
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) {
-      return;
-    }
-
-    // Validate location: text is required
-    if (_locationController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('PLEASE_ENTER_LOCATION'.tr),
-          backgroundColor: AppTheme.errorColor,
-          behavior: SnackBarBehavior.fixed,
-        ),
-      );
       return;
     }
 
@@ -279,44 +384,12 @@ class _LostCarFormViewState extends State<LostCarFormView> {
     try {
       final viewModel = Get.find<MissingCarViewModel>();
       bool success;
-
       if (isUpdateMode) {
         // Update mode
-        success = await viewModel.updateMissingCar(
-          carId: widget.car!.id,
-          plateNumber: _plateNumberController.text.trim(),
-          chassisNumber: _chassisNumberController.text.trim(),
-          brand: widget.car!.brand, // Keep original brand (not sent to API)
-          carName: _carNameController.text.trim().isEmpty
-              ? null
-              : _carNameController.text.trim(),
-          model: _modelController.text.trim(),
-          color: _colorController.text.trim(),
-          description: widget
-              .car!
-              .description, // Keep original description (not sent to API)
-          lastKnownLocation: _locationController.text.trim(),
-          contactInfo: widget
-              .car!
-              .contactInfo, // Keep original contactInfo (not sent to API)
-          status: widget.car!.status, // Keep original status (not sent to API)
-          rewardAmount: widget
-              .car!
-              .rewardAmount, // Keep original rewardAmount (not sent to API)
-          imageFile: null, // Image not supported by API
-        );
+        success = await viewModel.updateLostCarRequest(lostCar: lostCar);
       } else {
         // Create mode
-        success = await viewModel.createLostCarRequest(
-          plateNumber: _plateNumberController.text.trim(),
-          chassisNumber: _chassisNumberController.text.trim(),
-          carName: _carNameController.text.trim().isEmpty
-              ? null
-              : _carNameController.text.trim(),
-          model: _modelController.text.trim(),
-          color: _colorController.text.trim(),
-          lastKnownLocation: _locationController.text.trim(),
-        );
+        success = await viewModel.createLostCarRequest(lostCar: lostCar);
       }
 
       if (mounted) {
@@ -340,7 +413,7 @@ class _LostCarFormViewState extends State<LostCarFormView> {
               behavior: SnackBarBehavior.fixed,
             ),
           );
-          Get.back(result: true);
+          Get.back(result: success);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -392,5 +465,31 @@ class _LostCarFormViewState extends State<LostCarFormView> {
         });
       }
     }
+  }
+
+  bool _isArabicOrEnglish(
+    String input, {
+    bool allowDigits = false,
+    String extraAllowedCharacters = '',
+  }) {
+    var allowed = r'\u0600-\u06FFa-zA-Z';
+
+    if (allowDigits) {
+      allowed += r'0-9';
+    }
+
+    if (extraAllowedCharacters.isNotEmpty) {
+      final escaped = extraAllowedCharacters
+          .split('')
+          .map((char) => RegExp.escape(char))
+          .join();
+      allowed += escaped;
+    }
+
+    final buffer = StringBuffer('^[')
+      ..write(allowed)
+      ..write(r'\s]+$');
+
+    return RegExp(buffer.toString()).hasMatch(input);
   }
 }

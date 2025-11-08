@@ -25,10 +25,8 @@ class ArTranslations {
     'REFRESH': 'تحديث',
 
     // Car Status
-    'STATUS_ALL': 'الكل',
-    'STATUS_LOST': 'مفقودة',
-    'STATUS_FOUND': 'موجودة',
-    'STATUS_RECOVERED': 'مستردة',
+    'STATUS_LOST': 'مفقود',
+    'STATUS_FOUND': 'وجدت',
 
     // Car Details
     'CAR_DETAILS': 'تفاصيل السيارة',
@@ -53,6 +51,7 @@ class ArTranslations {
     'CONTACT_OWNER': 'التواصل مع المالك',
     'FULL_CAR_NAME': 'اسم السيارة الكامل',
     'PHONE_NUMBER': 'رقم الهاتف',
+    'ENTER_PHONE_NUMBER': 'أدخل رقم الهاتف',
     'CONTACT_US': 'تواصل معنا',
     // Car Information
     'PLATE': 'اللوحة',
@@ -207,6 +206,8 @@ class ArTranslations {
     'LOST_CAR_ADD_ERROR': 'فشل في إنشاء طلب السيارة المفقودة',
     'ADDITIONAL_INFO': 'معلومات إضافية',
     'MISSING_DATE': 'تاريخ الفقدان',
+    'THIS_FIELD_IS_REQUIRED': 'هذا الحقل مطلوب',
+    'ARABIC_OR_ENGLISH_ONLY': 'يرجى استخدام الأحرف العربية أو الإنجليزية فقط.',
 
     // About App Page
     'VERSION': 'الإصدار',
@@ -215,5 +216,16 @@ class ArTranslations {
         'منصة سودانية مخصصة لمساعدة المواطنين في العثور على سياراتهم المفقودة في السودان.',
     'DEVELOPED_FOR': 'مطوّر لـ',
     'COPYRIGHT': 'جميع الحقوق محفوظة',
+    'AHMED_MOHAMED': 'أحمد محمد',
+
+    // Launcher Screen
+    'SKIP': 'تخطي',
+    'GET_STARTED': 'ابدأ',
+    'SEARCH_LOST_CAR': 'ابحث عن سيارة مفقودة',
+    'SEARCH_LOST_CAR_DESCRIPTION':
+        'ابحث في قاعدة بيانات السيارات المفقودة باستخدام رقم الهيكل أو رقم اللوحة أو الموديل للعثور على سيارتك المفقودة.',
+    'ADD_REQUEST': 'إضافة طلب',
+    'ADD_REQUEST_DESCRIPTION':
+        'أبلغ عن سيارتك المفقودة بإضافة طلب يتضمن تفاصيل مثل رقم الهيكل ورقم اللوحة والموديل وموقع آخر معرف.',
   };
 }
