@@ -208,6 +208,17 @@ class ArTranslations {
     'MISSING_DATE': 'تاريخ الفقدان',
     'THIS_FIELD_IS_REQUIRED': 'هذا الحقل مطلوب',
     'ARABIC_OR_ENGLISH_ONLY': 'يرجى استخدام الأحرف العربية أو الإنجليزية فقط.',
+    'DELETE_ACCOUNT': 'حذف الحساب',
+    'DELETING_ACCOUNT': 'جارٍ حذف الحساب...',
+    'DELETE_ACCOUNT_DESCRIPTION':
+        'ستتم إزالة حسابك نهائيًا وجميع طلبات السيارات المرتبطة به.',
+    'DELETE_ACCOUNT_CONFIRM_TITLE': 'هل تريد حذف الحساب؟',
+    'DELETE_ACCOUNT_CONFIRM_MESSAGE':
+        'سيتم حذف حسابك وجميع بيانات السيارات المفقودة نهائيًا. لا يمكن التراجع عن هذه العملية.',
+    'DELETE_ACCOUNT_CONFIRM_ACTION': 'حذف',
+    'DELETE_ACCOUNT_SUCCESS': 'تم حذف حسابك بنجاح.',
+    'DELETE_ACCOUNT_ERROR': 'فشل حذف الحساب. يرجى المحاولة لاحقًا.',
+    'DELETE_ACCOUNT_OFFLINE': 'يجب الاتصال بالإنترنت لحذف الحساب.',
 
     // About App Page
     'VERSION': 'الإصدار',

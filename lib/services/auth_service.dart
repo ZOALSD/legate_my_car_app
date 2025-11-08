@@ -121,6 +121,47 @@ class AuthService {
     }
   }
 
+  /// Delete account remotely (if authenticated) and clear local session.
+  ///
+  /// Returns `true` when deletion succeeds or when no authenticated account
+  /// exists (for example, guest users). Returns `false` when the deletion
+  /// request fails.
+  static Future<bool> deleteAccount() async {
+    try {
+      final user = await getCurrentUser();
+      final token = await getToken();
+
+      // Guests or anonymous sessions can be cleared locally.
+      if (user == null || token == null || token.isEmpty || user.isGuest) {
+        await logout();
+        return true;
+      }
+
+      final hasInternet = await ConnectionHelper.hasInternet();
+      if (!hasInternet) {
+        throw Exception('NO_INTERNET_CONNECTION');
+      }
+
+      final dio = DioService.instance;
+      final response = await dio.delete('/auth/account');
+
+      final isSuccessStatus =
+          response.statusCode == 200 || response.statusCode == 204;
+      final data = response.data;
+      final isSuccessResponse =
+          data is Map<String, dynamic> && data['success'] == true;
+
+      if (isSuccessStatus || isSuccessResponse) {
+        await logout();
+        return true;
+      }
+
+      return false;
+    } catch (e) {
+      return false;
+    }
+  }
+
   /// Get current user information
   static Future<UserModel?> getCurrentUser() async {
     try {

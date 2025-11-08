@@ -50,13 +50,13 @@ class _GoogleSignInButtonState extends State<GoogleSignInButton> {
           }
 
           // Show success message
-          TranslationHelper.showSuccessSnackBar(
+          UtilsHelper.showSuccessSnackBar(
             context,
             message: 'SIGN_IN_SUCCESS'.tr,
           );
         } else {
           // Show error message
-          TranslationHelper.showErrorSnackBar(
+          UtilsHelper.showErrorSnackBar(
             context,
             message: 'GOOGLE_SIGN_IN_ERROR'.tr,
             title: 'SIGN_IN_ERROR'.tr,
@@ -65,7 +65,7 @@ class _GoogleSignInButtonState extends State<GoogleSignInButton> {
       }
     } catch (e) {
       if (mounted) {
-        TranslationHelper.showErrorSnackBar(
+        UtilsHelper.showErrorSnackBar(
           context,
           message: e.toString(),
           title: 'SIGN_IN_ERROR'.tr,

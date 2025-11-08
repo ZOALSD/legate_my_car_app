@@ -208,6 +208,19 @@ class EnTranslations {
     'MISSING_DATE': 'Missing Date',
     'THIS_FIELD_IS_REQUIRED': 'This field is required',
     'ARABIC_OR_ENGLISH_ONLY': 'Please use only Arabic or English characters.',
+    'DELETE_ACCOUNT': 'Delete Account',
+    'DELETING_ACCOUNT': 'Deleting account...',
+    'DELETE_ACCOUNT_DESCRIPTION':
+        'Permanently remove your account and any lost car listings associated with it.',
+    'DELETE_ACCOUNT_CONFIRM_TITLE': 'Delete account?',
+    'DELETE_ACCOUNT_CONFIRM_MESSAGE':
+        'This will permanently delete your account and all lost car data. This action cannot be undone.',
+    'DELETE_ACCOUNT_CONFIRM_ACTION': 'Delete',
+    'DELETE_ACCOUNT_SUCCESS': 'Your account has been deleted successfully.',
+    'DELETE_ACCOUNT_ERROR':
+        'Failed to delete the account. Please try again later.',
+    'DELETE_ACCOUNT_OFFLINE':
+        'Connect to the internet to delete your account.',
 
     // About App Page
     'VERSION': 'Version',

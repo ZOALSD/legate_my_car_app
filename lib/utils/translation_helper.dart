@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class TranslationHelper {
+class UtilsHelper {
   // Get translation with fallback
   static String tr(String key, {String? fallback}) {
     try {
