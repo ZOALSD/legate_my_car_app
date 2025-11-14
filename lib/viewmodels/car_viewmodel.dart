@@ -1,4 +1,7 @@
 import 'package:get/get.dart';
+import 'package:legate_my_car/models/enums/account_type.dart';
+import 'package:legate_my_car/models/user_model.dart';
+import 'package:legate_my_car/services/auth_service.dart';
 import 'package:legate_my_car/services/car_api_service.dart';
 import '../models/car_model.dart';
 
@@ -21,6 +24,7 @@ class CarViewModel extends GetxController {
   final RxInt _totalPages = 1.obs;
   final RxInt _totalCars = 0.obs;
   final RxBool _hasMorePages = false.obs;
+  final RxBool _isManagerRoll = false.obs;
 
   // Getters
   List<CarModel> get cars => _cars;
@@ -32,6 +36,7 @@ class CarViewModel extends GetxController {
   int get totalPages => _totalPages.value;
   int get totalCars => _totalCars.value;
   bool get hasMorePages => _hasMorePages.value;
+  bool get isManagerRoll => _isManagerRoll.value;
 
   @override
   void onInit() {
@@ -40,6 +45,7 @@ class CarViewModel extends GetxController {
   }
 
   Future<void> _initializeApp() async {
+    await setIsManagerRoll();
     await loadCars();
   }
 
@@ -59,16 +65,26 @@ class CarViewModel extends GetxController {
         chassisNumber: chassisNumber,
       );
 
-      if (append && page > 1) {
-        _cars.addAll(response.cars);
-      } else {
-        _cars.value = response.cars;
+      if (!response.success) {
+        _errorMessage.value = 'Failed to load cars';
+        _cars.value = [];
+        _currentPage.value = 1;
+        _totalPages.value = 1;
+        _totalCars.value = 0;
+        _hasMorePages.value = false;
+        return;
       }
 
-      _currentPage.value = response.pagination.currentPage;
-      _totalPages.value = response.pagination.lastPage;
-      _totalCars.value = response.pagination.total;
-      _hasMorePages.value = response.pagination.hasMorePages;
+      if (append && page > 1) {
+        _cars.addAll(response.data ?? []);
+      } else {
+        _cars.value = response.data ?? [];
+      }
+
+      _currentPage.value = response.pagination?.currentPage ?? 1;
+      _totalPages.value = response.pagination?.lastPage ?? 1;
+      _totalCars.value = response.pagination?.total ?? 0;
+      _hasMorePages.value = response.pagination?.hasMorePages ?? false;
     } catch (e) {
       // Extract error message, removing "Exception: " prefix if present
       String errorMsg = e.toString();
@@ -151,5 +167,11 @@ class CarViewModel extends GetxController {
     if (index != -1) {
       _cars[index] = updatedCar;
     }
+  }
+
+  Future<void> setIsManagerRoll() async {
+    final UserModel? user = await AuthService.getCurrentUser();
+    _isManagerRoll.value =
+        user != null && user.accountType == AccountType.manager;
   }
 }

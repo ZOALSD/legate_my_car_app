@@ -1,50 +1,15 @@
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:legate_my_car/config/app_flavor.dart';
+import 'package:legate_my_car/models/user_model.dart';
 import '../utils/connection_helper.dart';
-import '../models/login_model.dart';
 import 'dio_service.dart';
 
 class AuthService {
   static const _storage = FlutterSecureStorage();
   static const _tokenKey = 'auth_token';
   static const _userKey = 'auth_user';
-
-  /// Validate existing token with the server
-  static Future<bool> validateToken() async {
-    try {
-      final token = await getToken();
-
-      if (token == null || token.isEmpty) {
-        return false;
-      }
-
-      final hasInternet = await ConnectionHelper.hasInternet();
-      if (!hasInternet) {
-        return false;
-      }
-
-      final endpoint = '/guest/info';
-      final dio = DioService.instance;
-      final response = await dio.get(endpoint);
-
-      if (response.statusCode == 200) {
-        final userInfoResponse = UserInfoResponseModel.fromJson(
-          response.data as Map<String, dynamic>,
-        );
-
-        if (userInfoResponse.success) {
-          final userJson = userInfoResponse.user.toJsonString();
-          await _storage.write(key: _userKey, value: userJson);
-          return true;
-        }
-      }
-
-      return false;
-    } catch (e) {
-      return false;
-    }
-  }
 
   /// Login as guest user and store token
   static Future<bool> loginAsGuest() async {
@@ -61,12 +26,17 @@ class AuthService {
       final response = await dio.post(endpoint);
 
       if (response.statusCode == 200) {
-        // Parse response using the model
-        final loginResponse = LoginResponseModel.fromJson(response.data);
-
-        if (loginResponse.success && loginResponse.data.token.isNotEmpty) {
+        final responseData = response.data as Map<String, dynamic>;
+        final token = responseData['data']['token'] as String?;
+        final user = UserModel.fromJson(
+          responseData['data']['user'] as Map<String, dynamic>,
+        );
+        if (token != null && token.isNotEmpty && user.id != 0) {
           // Store token
-          await _setToken(loginResponse.data.token);
+          await _setToken(token);
+          // Store user info from Google account
+          final userJson = jsonEncode(user.toJson());
+          await _storage.write(key: _userKey, value: userJson as String?);
           return true;
         }
       }
@@ -92,15 +62,15 @@ class AuthService {
     }
   }
 
-  /// Check if user is authenticated (with optional validation)
-  static Future<bool> isAuthenticated() async {
+  /// Check if thier token is stored
+  static Future<bool> hasValidTokenStored() async {
     final token = await getToken();
 
     if (token == null || token.isEmpty) {
       return false;
     }
 
-    return await validateToken();
+    return true;
   }
 
   /// Logout user (clear token and user info)
@@ -223,7 +193,7 @@ class AuthService {
       }
 
       // Send email and idToken to backend
-      final endpoint = '/auth/login';
+      final endpoint = "/login";
       final dio = DioService.instance;
       final response = await dio.post(
         endpoint,
@@ -236,22 +206,18 @@ class AuthService {
         // Check if response is successful
         if (responseData['success'] == true) {
           // The data field contains the token as a string
-          final token = responseData['data'] as String?;
-
-          if (token != null && token.isNotEmpty) {
+          final token = responseData['data']['token'] as String?;
+          final user = UserModel.fromJson(
+            responseData['data']['user'] as Map<String, dynamic>,
+          );
+          if (token != null && token.isNotEmpty && user.id != 0) {
             // Store token
             await _setToken(token);
 
             // Store user info from Google account
-            final userJson = jsonEncode({
-              'id': 0, // Will be updated from backend if available
-              'name': googleUser.displayName ?? '',
-              'email': email,
-              'is_guest': false,
-            });
-            await _storage.write(key: _userKey, value: userJson);
+            final userJson = jsonEncode(user.toJson());
+            await _storage.write(key: _userKey, value: userJson as String?);
 
-            print('✅ Google Sign-In successful');
             return true;
           }
         }

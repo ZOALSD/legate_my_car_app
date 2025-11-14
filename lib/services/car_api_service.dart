@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:get/get_utils/get_utils.dart';
@@ -10,7 +11,7 @@ class CarApiService {
   // Get all cars with pagination
   static final dio = DioService.instance;
 
-  static Future<CarsApiResponse> getAllCars({
+  static Future<ListResponseModel<CarModel>> getAllCars({
     int page = 1,
     int perPage = 10,
     String? chassisNumber,
@@ -40,9 +41,14 @@ class CarApiService {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonData = response.data;
-        return CarsApiResponse.fromJson(jsonData);
+        final listResponseModel = ListResponseModel.fromJson(
+          jsonData,
+          (data) => CarModel.fromJson(data),
+        );
+
+        return listResponseModel;
       } else {
-        throw Exception('Failed to load cars: ${response.statusCode}');
+        return ListResponseModel(success: false, data: [], pagination: null);
       }
     } on DioException catch (e) {
       // Handle specific DioException types
@@ -77,12 +83,8 @@ class CarApiService {
       final response = await dio.get('/cars/$id');
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> jsonData = response.data;
-        final apiResponse = ApiResponseModel.fromJson(
-          jsonData,
-          (data) => CarModel.fromJson(data),
-        );
-        return apiResponse.data;
+        final data = jsonDecode(response.data);
+        return CarModel.fromJson(data['data']);
       } else {
         throw Exception('Failed to load car: ${response.statusCode}');
       }
@@ -124,12 +126,8 @@ class CarApiService {
       final response = await dio.post('/cars', data: formData);
 
       if (response.statusCode == 201) {
-        final Map<String, dynamic> jsonData = response.data;
-        final apiResponse = ApiResponseModel.fromJson(
-          jsonData,
-          (data) => CarModel.fromJson(data),
-        );
-        return apiResponse.data;
+        final data = jsonDecode(response.data);
+        return CarModel.fromJson(data['data']);
       } else {
         throw Exception('Failed to create car: ${response.statusCode}');
       }
@@ -172,12 +170,8 @@ class CarApiService {
       final response = await dio.post('/cars/${car.id}/update', data: formData);
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> jsonData = response.data;
-        final apiResponse = ApiResponseModel.fromJson(
-          jsonData,
-          (data) => CarModel.fromJson(data),
-        );
-        return apiResponse.data;
+        // final data = jsonDecode(response.data);
+        return CarModel.fromJson(response.data['data']);
       } else {
         throw Exception('Failed to update car: ${response.statusCode}');
       }

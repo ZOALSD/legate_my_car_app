@@ -52,6 +52,7 @@ class EnTranslations {
     'PHONE_NUMBER': 'Phone Number',
     'ENTER_PHONE_NUMBER': 'Enter phone number',
     'CONTACT_US': 'Contact Us',
+    'MODEL_YEAR': 'Model Year',
 
     // Car Information
     'PLATE': 'Plate',

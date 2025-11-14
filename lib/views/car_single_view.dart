@@ -11,8 +11,13 @@ import '../theme/app_theme.dart';
 
 class CarSingleView extends StatelessWidget {
   final CarModel car;
+  final bool isManagerRoll;
 
-  const CarSingleView({super.key, required this.car});
+  const CarSingleView({
+    super.key,
+    required this.car,
+    required this.isManagerRoll,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -131,14 +136,14 @@ class CarSingleView extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          _buildDetailRow('CAR_NAME'.tr, car.carName ?? " - "),
           _buildDetailRow('CHASSIS_NUMBER'.tr, car.chassisNumber ?? " - "),
           _buildDetailRow('PLATE_NUMBER'.tr, car.plateNumber ?? " - "),
           Visibility(
             visible: AppFlavorConfig.isManagers,
             child: _buildDetailRow('LOCATION'.tr, car.location ?? " - "),
           ),
-          _buildDetailRow('BRAND'.tr, car.modelYear ?? " - "),
-          _buildDetailRow('MODEL'.tr, car.model ?? " - "),
+          _buildDetailRow('MODEL_YEAR'.tr, car.modelYear?.toString() ?? " - "),
           _buildDetailRow('DESCRIPTION'.tr, car.description ?? " - "),
         ],
       ),
@@ -196,6 +201,7 @@ class CarSingleView extends StatelessWidget {
   }
 
   Widget _buildFloatingActionButton(BuildContext context) {
+    if (!isManagerRoll && AppFlavorConfig.isManagers) return SizedBox.shrink();
     return FloatingActionButton.extended(
       onPressed: () => {
         if (AppFlavorConfig.isManagers)

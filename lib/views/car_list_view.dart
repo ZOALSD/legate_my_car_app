@@ -206,7 +206,12 @@ class _CarListViewState extends State<CarListView> {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => CarSingleView(car: vehicle)),
+          MaterialPageRoute(
+            builder: (context) => CarSingleView(
+              car: vehicle,
+              isManagerRoll: viewModel.isManagerRoll,
+            ),
+          ),
         ).then((result) {
           // Handle result from CarSingleView (when car is edited there)
           if (result != null && result is Map) {
@@ -216,6 +221,15 @@ class _CarListViewState extends State<CarListView> {
             if (car != null && action != null) {
               if (action == 'update') {
                 viewModel.updateCar(car);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CarSingleView(
+                      car: car,
+                      isManagerRoll: viewModel.isManagerRoll,
+                    ),
+                  ),
+                );
               } else if (action == 'create') {
                 viewModel.addCar(car);
               }
@@ -245,7 +259,7 @@ class _CarListViewState extends State<CarListView> {
                     Directionality(
                       textDirection: ui.TextDirection.ltr,
                       child: Text(
-                        "${vehicle.carNumber ?? " "} - ${vehicle.chassisNumber ?? " - "}",
+                        "${vehicle.number?.toString() ?? " "} - ${vehicle.chassisNumber ?? " - "}",
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
@@ -261,7 +275,7 @@ class _CarListViewState extends State<CarListView> {
                       ),
                     ),
                     Text(
-                      "${vehicle.modelYear ?? " "} - ${vehicle.model ?? ""}",
+                      "${vehicle.modelYear?.toString() ?? " "} - ${vehicle.carName ?? ""}",
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
                     ),

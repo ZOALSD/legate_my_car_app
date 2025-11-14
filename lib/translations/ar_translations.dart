@@ -53,6 +53,8 @@ class ArTranslations {
     'PHONE_NUMBER': 'رقم الهاتف',
     'ENTER_PHONE_NUMBER': 'أدخل رقم الهاتف',
     'CONTACT_US': 'تواصل معنا',
+    'MODEL_YEAR': 'سنة الموديل',
+
     // Car Information
     'PLATE': 'اللوحة',
     'LAST_SEEN': 'آخر ظهور',

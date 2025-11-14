@@ -1,38 +1,43 @@
-import 'car_model.dart';
-
-class ApiResponseModel<T> {
+class ListResponseModel<T> {
   final bool success;
-  final T data;
-  final String? message;
-  final Map<String, dynamic>? errors;
+  final String? apiVersion;
+  final List<T>? data;
+  final SimplePagination? pagination;
 
-  ApiResponseModel({
+  ListResponseModel({
     required this.success,
-    required this.data,
-    this.message,
-    this.errors,
+    this.apiVersion,
+    this.data,
+    this.pagination,
   });
 
-  factory ApiResponseModel.fromJson(
+  factory ListResponseModel.fromJson(
     Map<String, dynamic> json,
     T Function(Map<String, dynamic>) fromJsonT,
   ) {
-    return ApiResponseModel<T>(
-      success: json['success'] ?? false,
-      data: fromJsonT(json['data'] ?? {}),
-      message: json['message'],
-      errors: json['errors'] != null
-          ? Map<String, dynamic>.from(json['errors'])
-          : null,
-    );
+    try {
+      return ListResponseModel<T>(
+        success: json['success'] ?? false,
+        apiVersion: json['api_version'] ?? '',
+        data: json['data'] != null
+            ? (json['data'] as List<dynamic>?)
+                  ?.map((e) => fromJsonT(e))
+                  .toList()
+            : [],
+        pagination: SimplePagination.fromJson(json['pagination'] ?? {}),
+      );
+    } catch (e) {
+      print('❌ Error parsing ListResponseModel: $e');
+      return ListResponseModel(success: false, data: [], pagination: null);
+    }
   }
 
   Map<String, dynamic> toJson(Map<String, dynamic> Function(T) toJsonT) {
     return {
       'success': success,
-      'data': toJsonT(data),
-      'message': message,
-      'errors': errors,
+      'api_version': apiVersion,
+      'data': data?.map((e) => toJsonT(e)).toList(),
+      'pagination': pagination?.toJson(),
     };
   }
 }
@@ -65,69 +70,6 @@ class SimplePagination {
       'total': total,
       'last_page': lastPage,
       'has_more_pages': hasMorePages,
-    };
-  }
-}
-
-class CarsApiResponse {
-  final List<CarModel> cars;
-  final SimplePagination pagination;
-
-  CarsApiResponse({required this.cars, required this.pagination});
-
-  factory CarsApiResponse.fromJson(Map<String, dynamic> json) {
-    return CarsApiResponse(
-      cars:
-          (json['data'] as List<dynamic>?)
-              ?.map((carJson) => CarModel.fromJson(carJson))
-              .toList() ??
-          [],
-      pagination: SimplePagination.fromJson(json['pagination'] ?? {}),
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'success': true,
-      'data': cars.map((car) => car.toJson()).toList(),
-      'pagination': pagination.toJson(),
-    };
-  }
-}
-
-class ListResponseModel<T> {
-  final bool success;
-  final String? apiVersion;
-  final List<T>? data;
-  final SimplePagination? pagination;
-
-  ListResponseModel({
-    required this.success,
-    this.apiVersion,
-    this.data,
-    this.pagination,
-  });
-
-  factory ListResponseModel.fromJson(
-    Map<String, dynamic> json,
-    T Function(Map<String, dynamic>) fromJsonT,
-  ) {
-    return ListResponseModel<T>(
-      success: json['success'] ?? false,
-      apiVersion: json['api_version'] ?? '',
-      data: json['data'] != null
-          ? (json['data'] as List<dynamic>?)?.map((e) => fromJsonT(e)).toList()
-          : [],
-      pagination: SimplePagination.fromJson(json['pagination'] ?? {}),
-    );
-  }
-
-  Map<String, dynamic> toJson(Map<String, dynamic> Function(T) toJsonT) {
-    return {
-      'success': success,
-      'api_version': apiVersion,
-      'data': data?.map((e) => toJsonT(e)).toList(),
-      'pagination': pagination?.toJson(),
     };
   }
 }

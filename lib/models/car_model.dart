@@ -1,113 +1,66 @@
 class CarModel {
   final String? id;
+  final int? number;
+  final String? carName;
   final String? plateNumber;
   final String? chassisNumber;
   final String? modelYear;
-  final String? model;
-  final String? color;
   final String? description;
-  final String? imageUrl;
-  final int? userId;
-  final String? status;
-  final DateTime? lostDate;
   final String? location;
   final String? latitude;
   final String? longitude;
-  final String? phoneNumber;
-  final int? carNumber;
-  final String? contactInfo;
-  final DateTime? createdAt;
-  final DateTime? updatedAt;
+  final String? imagePath;
+  final String? imageUrl;
+  final int? userId;
 
   CarModel({
     this.id,
-    required this.plateNumber,
-    required this.chassisNumber,
-    required this.modelYear,
-    required this.model,
-    required this.description,
-    this.color,
-    this.imageUrl,
-    this.userId,
-    this.status,
-    this.lostDate,
+    this.number,
+    this.carName,
+    this.plateNumber,
+    this.chassisNumber,
+    this.modelYear,
+    this.description,
     this.location,
     this.latitude,
     this.longitude,
-    this.phoneNumber,
-    this.carNumber,
-    this.contactInfo,
-    this.createdAt,
-    this.updatedAt,
+    this.imagePath,
+    this.imageUrl,
+    this.userId,
   });
 
   factory CarModel.fromJson(Map<String, dynamic> json) {
+    print('imageUrl: ${json['imageUrl'] ?? ''}');
     return CarModel(
-      id: json['id']?.toString() ?? '',
-      plateNumber: json['plate_number'] ?? '',
-      chassisNumber: json['chassis_number'] ?? '',
-      modelYear: json['brand'] ?? '',
-      model: json['model'] ?? '',
-      color: json['color'] ?? '',
+      id: json['id'] ?? '',
+      number: json['number'] ?? -1, // -1 means not set
+      carName: json['carName'] ?? '',
+      plateNumber: json['plateNumber'] ?? '',
+      chassisNumber: json['chassisNumber'] ?? '',
+      modelYear: json['modelYear'] ?? '',
       description: json['description'] ?? '',
-      imageUrl: json['image_url'],
-      userId: json['user_id'] ?? 0,
-      status: json['status'] ?? '',
-      lostDate: json['lost_date'] != null
-          ? DateTime.parse(json['lost_date'])
-          : null,
       location: json['location'] ?? '',
-      latitude: json['latitude']?.toString(),
-      longitude: json['longitude']?.toString(),
-      phoneNumber: json['phone_number'],
-      carNumber: json['car_number'],
-      contactInfo: json['contact_info'],
-      createdAt: DateTime.parse(
-        json['created_at'] ?? DateTime.now().toIso8601String(),
-      ),
-      updatedAt: DateTime.parse(
-        json['updated_at'] ?? DateTime.now().toIso8601String(),
-      ),
+      latitude: json['latitude'] ?? '',
+      longitude: json['longitude'] ?? '',
+      imagePath: json['imagePath'] ?? '',
+      imageUrl: json['imageUrl'] ?? '',
+      userId: json['userId'] ?? -1, // -1 means not set
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'plate_number': plateNumber,
-      'chassis_number': chassisNumber,
-      'brand': modelYear,
-      'model': model,
-      'color': color,
-      'description': description,
-      'status': "lost",
+      'number': number,
+      'carName': carName,
+      'plateNumber': plateNumber,
+      'chassisNumber': chassisNumber,
+      'modelYear': modelYear,
       'location': location,
       'latitude': latitude,
       'longitude': longitude,
+      'imagePath': imagePath,
+      'description': description,
     };
   }
-
-  String get fullCarName => '$modelYear $model';
-
-  String get formattedLostDate {
-    return '${lostDate?.day}/${lostDate?.month}/${lostDate?.year}';
-  }
-
-  String get formattedCreatedDate {
-    return '${createdAt?.day}/${createdAt?.month}/${createdAt?.year}';
-  }
-
-  @override
-  String toString() {
-    return 'CarModel(id: $id, plateNumber: $plateNumber, modelYear: $modelYear, model: $model, status: $status)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    return other is CarModel && other.id == id;
-  }
-
-  @override
-  int get hashCode => id.hashCode;
 }

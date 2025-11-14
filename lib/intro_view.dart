@@ -73,7 +73,7 @@ class _IntroViewState extends State<IntroView> {
       }
 
       // Check if user is already authenticated
-      final isAuthenticated = await AuthService.isAuthenticated();
+      final isAuthenticated = await AuthService.hasValidTokenStored();
 
       if (isAuthenticated) {
         _navigateToCarList();

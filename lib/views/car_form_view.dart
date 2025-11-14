@@ -20,11 +20,10 @@ class CarFormView extends StatefulWidget {
 
 class _CarFormViewState extends State<CarFormView> {
   final _formKey = GlobalKey<FormState>();
+  final _carNameController = TextEditingController();
   final _plateNumberController = TextEditingController();
   final _chassisNumberController = TextEditingController();
   final _modelYearController = TextEditingController();
-  final _modelController = TextEditingController();
-  final _colorController = TextEditingController();
   final _locationController = TextEditingController();
   final _conditionDescriptionController = TextEditingController();
 
@@ -47,9 +46,8 @@ class _CarFormViewState extends State<CarFormView> {
     final car = widget.car!;
     _plateNumberController.text = car.plateNumber ?? '';
     _chassisNumberController.text = car.chassisNumber ?? '';
-    _modelYearController.text = car.modelYear ?? '';
-    _modelController.text = car.model ?? '';
-    _colorController.text = car.color ?? '';
+    _modelYearController.text = car.modelYear?.toString() ?? '';
+    _carNameController.text = car.carName ?? '';
     _locationController.text = car.location ?? '';
     _conditionDescriptionController.text = car.description ?? '';
     _selectedLatitude = car.latitude != null
@@ -66,8 +64,7 @@ class _CarFormViewState extends State<CarFormView> {
     _plateNumberController.dispose();
     _chassisNumberController.dispose();
     _modelYearController.dispose();
-    _modelController.dispose();
-    _colorController.dispose();
+    _carNameController.dispose();
     _locationController.dispose();
     _conditionDescriptionController.dispose();
     super.dispose();
@@ -136,7 +133,7 @@ class _CarFormViewState extends State<CarFormView> {
                       const SizedBox(height: 16),
 
                       _buildTextField(
-                        controller: _modelController,
+                        controller: _carNameController,
                         label: 'CAR_NAME'.tr,
                         hint: 'مثال: كورولا',
                         required: false,
@@ -730,11 +727,11 @@ class _CarFormViewState extends State<CarFormView> {
   }
 
   CarModel get car => CarModel(
-    id: widget.car?.id,
+    id: widget.car?.id ?? '',
     plateNumber: _plateNumberController.text.trim(),
     chassisNumber: _chassisNumberController.text.trim(),
     modelYear: _modelYearController.text.trim(),
-    model: _modelController.text.trim(),
+    carName: _carNameController.text.trim(),
     description: _conditionDescriptionController.text.trim(),
     location: _locationController.text.trim(),
     latitude: _selectedLatitude!.toString(),
@@ -745,8 +742,7 @@ class _CarFormViewState extends State<CarFormView> {
     _plateNumberController.clear();
     _chassisNumberController.clear();
     _modelYearController.clear();
-    _modelController.clear();
-    _colorController.clear();
+    _carNameController.clear();
     _locationController.clear();
     _conditionDescriptionController.clear();
     _selectedImage = null;
