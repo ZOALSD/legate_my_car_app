@@ -126,8 +126,9 @@ class CarApiService {
       final response = await dio.post('/cars', data: formData);
 
       if (response.statusCode == 201) {
-        final data = jsonDecode(response.data);
-        return CarModel.fromJson(data['data']);
+        return CarModel.fromJson(response.data['data']);
+      } else if (response.statusCode == 422) {
+        throw Exception(_extractValidationMessage(response.data));
       } else {
         throw Exception('Failed to create car: ${response.statusCode}');
       }
@@ -148,7 +149,7 @@ class CarApiService {
         throw Exception('Network error: ${e.message ?? "Unknown error"}');
       }
     } catch (e) {
-      throw Exception('Error creating car: $e');
+      throw Exception(_formatErrorMessage(e));
     }
   }
 
@@ -172,6 +173,8 @@ class CarApiService {
       if (response.statusCode == 200) {
         // final data = jsonDecode(response.data);
         return CarModel.fromJson(response.data['data']);
+      } else if (response.statusCode == 422) {
+        throw Exception(_extractValidationMessage(response.data));
       } else {
         throw Exception('Failed to update car: ${response.statusCode}');
       }
@@ -191,7 +194,91 @@ class CarApiService {
         throw Exception('Network error: ${e.message ?? "Unknown error"}');
       }
     } catch (e) {
-      throw Exception('Error updating car: $e');
+      throw Exception(_formatErrorMessage(e));
     }
+  }
+
+  static String _formatErrorMessage(Object error) {
+    final message = error.toString();
+    const prefix = 'Exception: ';
+    if (message.startsWith(prefix)) {
+      return message.substring(prefix.length);
+    }
+    return message;
+  }
+
+  static String _extractValidationMessage(dynamic rawPayload) {
+    dynamic payload = rawPayload;
+
+    if (payload is String) {
+      try {
+        payload = jsonDecode(payload);
+      } catch (_) {}
+    }
+
+    final messages = <String>[];
+
+    void addMessage(String? code) {
+      if (code == null || code.isEmpty) return;
+      final translated = code.tr;
+      messages.add(translated.isNotEmpty ? translated : code);
+    }
+
+    Map<String, dynamic>? dataMap;
+    if (payload is Map<String, dynamic>) {
+      dataMap = payload;
+    }
+
+    dynamic errors;
+    if (dataMap != null) {
+      errors = dataMap['errors'] ?? dataMap['data'];
+      if (errors is Map<String, dynamic>) {
+        final nestedErrors = errors['errors'];
+        if (nestedErrors != null) {
+          errors = nestedErrors;
+        }
+      }
+    }
+
+    void parseErrors(dynamic err) {
+      if (err == null) return;
+      if (err is List) {
+        for (final entry in err) {
+          if (entry is List || entry is Map) {
+            parseErrors(entry);
+          } else {
+            addMessage(entry?.toString());
+          }
+        }
+      } else if (err is Map<String, dynamic>) {
+        err.forEach((key, value) {
+          if (value is List) {
+            for (final nested in value) {
+              addMessage('$key: ${nested.toString()}');
+            }
+          } else {
+            addMessage('$key: ${value.toString()}');
+          }
+        });
+      } else {
+        addMessage(err.toString());
+      }
+    }
+
+    parseErrors(dataMap?['errors']);
+
+    if (messages.isEmpty) {
+      parseErrors(dataMap?['data']?['errors']);
+    }
+
+    if (messages.isEmpty && dataMap?['message'] != null) {
+      addMessage(dataMap!['message'].toString());
+    }
+
+    if (messages.isEmpty) {
+      addMessage('VALIDATION_ERRORS');
+    }
+
+    return messages.join('\n');
   }
 }

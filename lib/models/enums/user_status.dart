@@ -1,1 +1,1 @@
-enum UserStatus { active, inactive, pending }
+enum UserStatus { active, unactive, pending }

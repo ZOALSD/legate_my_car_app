@@ -13,7 +13,11 @@ val keystorePropertiesFile = rootProject.file("key.properties")
 if (keystorePropertiesFile.exists()) {
     keystorePropertiesFile.inputStream().use { keystoreProperties.load(it) }
 }
-val isReleaseSigningConfigured = keystoreProperties.isNotEmpty()
+val requiredKeystoreKeys = listOf("storeFile", "storePassword", "keyAlias", "keyPassword")
+val isReleaseSigningConfigured = requiredKeystoreKeys.all { key ->
+    val value = keystoreProperties[key] as String?
+    !value.isNullOrBlank()
+}
 
 android {
     namespace = "com.laqeetarabeety.managers"

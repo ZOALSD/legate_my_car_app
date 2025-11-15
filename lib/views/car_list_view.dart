@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:legate_my_car/theme/app_theme.dart';
+import 'package:legate_my_car/views/car_form_view.dart';
 import 'package:legate_my_car/views/car_single_view.dart';
 import 'package:legate_my_car/views/search_Widget.dart';
 import 'package:legate_my_car/views/menu_view.dart';
@@ -125,13 +126,18 @@ class _CarListViewState extends State<CarListView> {
           ],
         ),
       ),
-      // floatingActionButton: FloatingActionButton(
-      //   backgroundColor: Color(0xFF009A49),
-      //   child: Icon(Icons.add, color: Colors.white),
-      //   onPressed: () {
-      //     // Navigate to add car screen
-      //   },
-      // ),
+      floatingActionButton: AppFlavorConfig.isManagers
+          ? FloatingActionButton(
+              backgroundColor: Color(0xFF009A49),
+              child: Icon(Icons.add, color: Colors.white),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => CarFormView()),
+                );
+              },
+            )
+          : SizedBox.shrink(),
     );
   }
 

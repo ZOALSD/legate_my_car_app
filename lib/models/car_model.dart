@@ -11,6 +11,7 @@ class CarModel {
   final String? longitude;
   final String? imagePath;
   final String? imageUrl;
+  final UserModelShortInfo? user;
   final int? userId;
 
   CarModel({
@@ -26,11 +27,11 @@ class CarModel {
     this.longitude,
     this.imagePath,
     this.imageUrl,
+    this.user,
     this.userId,
   });
 
   factory CarModel.fromJson(Map<String, dynamic> json) {
-    print('imageUrl: ${json['imageUrl'] ?? ''}');
     return CarModel(
       id: json['id'] ?? '',
       number: json['number'] ?? -1, // -1 means not set
@@ -45,6 +46,9 @@ class CarModel {
       imagePath: json['imagePath'] ?? '',
       imageUrl: json['imageUrl'] ?? '',
       userId: json['userId'] ?? -1, // -1 means not set
+      user: json.containsKey('user') && json['user'] != null
+          ? UserModelShortInfo.fromJson(json['user'])
+          : null,
     );
   }
 
@@ -62,5 +66,29 @@ class CarModel {
       'imagePath': imagePath,
       'description': description,
     };
+  }
+}
+
+class UserModelShortInfo {
+  final int id;
+  final String name;
+  final String email;
+
+  UserModelShortInfo({
+    required this.id,
+    required this.name,
+    required this.email,
+  });
+
+  factory UserModelShortInfo.fromJson(Map<String, dynamic> json) {
+    return UserModelShortInfo(
+      id: json['id'] ?? -1,
+      name: json['name'] ?? '',
+      email: json['email'] ?? '',
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {'id': id, 'name': name, 'email': email};
   }
 }

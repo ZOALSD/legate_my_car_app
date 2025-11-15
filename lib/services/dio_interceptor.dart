@@ -1,4 +1,6 @@
 import 'package:dio/dio.dart';
+import 'package:get/get.dart' hide Response;
+import 'package:legate_my_car/views/login_view.dart';
 import '../services/auth_service.dart';
 
 class DioInterceptor extends Interceptor {
@@ -29,9 +31,18 @@ class DioInterceptor extends Interceptor {
   }
 
   @override
-  void onResponse(Response response, ResponseInterceptorHandler handler) {
+  void onResponse(Response response, ResponseInterceptorHandler handler) async {
     // Log response details
     print('📥 RESPONSE: ${response.statusCode} ${response.requestOptions.uri}');
+    if (response.statusCode == 401) {
+      final requestPath = response.requestOptions.path;
+      final isLoginEndpoint = requestPath.contains('/login');
+
+      if (!isLoginEndpoint) {
+        await AuthService.logout();
+        Get.offAll(() => const LoginView());
+      }
+    }
 
     if (response.data != null) {
       print(
@@ -48,33 +59,13 @@ class DioInterceptor extends Interceptor {
     print('❌ URL: ${err.requestOptions.uri}');
     print('❌ Status Code: ${err.response?.statusCode}');
 
-    // Handle 401 Unauthorized - try to refresh token
     if (err.response?.statusCode == 401) {
-      print('⚠️ Unauthorized (401), attempting to re-login...');
+      final requestPath = err.requestOptions.path;
+      final isLoginEndpoint = requestPath.contains('/login');
 
-      try {
-        final loginSuccess = await AuthService.loginAsGuest();
-
-        if (loginSuccess) {
-          print('✅ Re-authenticated successfully, retrying request...');
-
-          // Retry the original request with new token
-          final token = await AuthService.getToken();
-          if (token != null && token.isNotEmpty) {
-            err.requestOptions.headers['Authorization'] = 'Bearer $token';
-
-            try {
-              final options = err.requestOptions;
-              final dio = Dio();
-              final response = await dio.fetch(options);
-              return handler.resolve(response);
-            } catch (e) {
-              print('❌ Retry failed: $e');
-            }
-          }
-        }
-      } catch (e) {
-        print('❌ Re-authentication failed: $e');
+      if (!isLoginEndpoint) {
+        await AuthService.logout();
+        Get.offAll(() => const LoginView());
       }
     }
 

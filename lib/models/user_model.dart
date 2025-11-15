@@ -7,6 +7,7 @@ class UserModel {
   final String email;
   final UserStatus status;
   final AccountType accountType;
+  final int carsCount;
   final DateTime createdAt;
   final DateTime updatedAt;
   final bool isGuest;
@@ -17,6 +18,7 @@ class UserModel {
     required this.email,
     required this.status,
     required this.accountType,
+    required this.carsCount,
     required this.createdAt,
     required this.updatedAt,
     required this.isGuest,
@@ -33,6 +35,7 @@ class UserModel {
       accountType: json.containsKey('accountType')
           ? AccountType.values.byName(json['accountType'])
           : AccountType.client,
+      carsCount: json.containsKey('carsCount') ? json['carsCount'] : 0,
       createdAt: DateTime.parse(json['createdAt']),
       updatedAt: DateTime.parse(json['updatedAt']),
       isGuest: json.containsKey('isGuest') ? json['isGuest'] : false,
@@ -44,8 +47,8 @@ class UserModel {
       'id': id,
       'name': name,
       'email': email,
-      'status': status,
-      'accountType': accountType,
+      'status': status.name,
+      'accountType': accountType.name,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
       'isGuest': isGuest,

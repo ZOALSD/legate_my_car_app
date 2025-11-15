@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
-import '../utils/connection_helper.dart';
-import '../widgets/google_sign_in_button.dart';
-import '../theme/app_theme.dart';
+import 'package:legate_my_car/models/enums/user_status.dart';
+import 'package:legate_my_car/models/login_response.dart';
 import '../config/app_flavor.dart';
+import '../theme/app_theme.dart';
+import '../utils/connection_helper.dart';
+import '../utils/translation_helper.dart';
+import '../views/car_list_view.dart';
+import '../widgets/google_sign_in_button.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -98,11 +102,66 @@ class _LoginViewState extends State<LoginView> {
               GoogleSignInButton(
                 showAsOutline: false,
                 padding: EdgeInsets.zero,
+                onResult: _handleSignInResult,
+                onInactiveStatus: _handleAccountInactive,
+                onError: _handleSignInError,
               ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  void _handleSignInResult(LoginResponse response) {
+    if (!mounted) return;
+
+    if (response.success) {
+      if (Get.isDialogOpen == true) {
+        Get.back();
+      }
+      Get.offAll(() => const CarListView());
+      UtilsHelper.showSuccessSnackBar(context, message: 'SIGN_IN_SUCCESS'.tr);
+    } else if (response.isInactive && response.inactiveStatus != null) {
+      _handleAccountInactive(response.inactiveStatus!);
+    } else {
+      UtilsHelper.showErrorSnackBar(
+        context,
+        message: _translateMessage(response.message),
+        title: 'SIGN_IN_ERROR'.tr,
+      );
+    }
+  }
+
+  void _handleAccountInactive(UserStatus status) {
+    final statusLabel = 'USER_STATUS_${status.name.toUpperCase()}'.tr;
+    Get.dialog(
+      AlertDialog(
+        title: Text('ACCOUNT_INACTIVE_TITLE'.tr),
+        content: Text(
+          'ACCOUNT_INACTIVE_MESSAGE'.trParams({'status': statusLabel}),
+        ),
+        actions: [
+          TextButton(onPressed: () => Get.back(), child: Text('OK'.tr)),
+        ],
+      ),
+    );
+  }
+
+  void _handleSignInError(Object error) {
+    if (!mounted) return;
+    UtilsHelper.showErrorSnackBar(
+      context,
+      message: 'GOOGLE_SIGN_IN_ERROR'.tr,
+      title: 'GOOGLE_SIGN_IN_ERROR'.tr,
+    );
+  }
+
+  String _translateMessage(String? message) {
+    if (message == null || message.isEmpty) {
+      return 'GOOGLE_SIGN_IN_ERROR'.tr;
+    }
+    final translated = message.tr;
+    return translated.isEmpty ? message : translated;
   }
 }

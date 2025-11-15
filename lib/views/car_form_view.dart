@@ -656,73 +656,50 @@ class _CarFormViewState extends State<CarFormView> {
     });
 
     try {
-      CarModel? resultCar;
-      if (_isEditMode) {
-        resultCar = await CarApiService.updateCar(
-          car: car,
-          imageFile: _selectedImage,
-        );
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(Icons.check_circle, color: AppTheme.sudanWhite),
-                const SizedBox(width: 8),
-                Expanded(child: Text('CAR_UPDATE_SUCCESS'.tr)),
-              ],
-            ),
-            backgroundColor: AppTheme.secondaryColor,
-            behavior: SnackBarBehavior.fixed,
-          ),
-        );
-      } else {
-        resultCar = await CarApiService.createCar(
-          car: car,
-          imageFile: _selectedImage,
-        );
+      final payload = car;
+      final CarModel resultCar = _isEditMode
+          ? await CarApiService.updateCar(
+              car: payload,
+              imageFile: _selectedImage,
+            )
+          : await CarApiService.createCar(
+              car: payload,
+              imageFile: _selectedImage,
+            );
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(Icons.check_circle, color: AppTheme.sudanWhite),
-                const SizedBox(width: 8),
-                Expanded(child: Text('CAR_REPORT_SUCCESS'.tr)),
-              ],
-            ),
-            backgroundColor: AppTheme.secondaryColor,
-            behavior: SnackBarBehavior.fixed,
-          ),
-        );
-      }
-
-      _clearForm();
-      // Return the car model with action type
-      Get.back(
-        result: {'car': resultCar, 'action': _isEditMode ? 'update' : 'create'},
-      );
-    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
             children: [
-              const Icon(Icons.error, color: AppTheme.sudanWhite),
+              const Icon(Icons.check_circle, color: AppTheme.sudanWhite),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  _isEditMode ? 'CAR_UPDATE_ERROR'.tr : 'CAR_REPORT_ERROR'.tr,
+                  _isEditMode
+                      ? 'CAR_UPDATE_SUCCESS'.tr
+                      : 'CAR_REPORT_SUCCESS'.tr,
                 ),
               ),
             ],
           ),
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: AppTheme.secondaryColor,
           behavior: SnackBarBehavior.fixed,
         ),
       );
+
+      _clearForm();
+      Get.back(
+        result: {'car': resultCar, 'action': _isEditMode ? 'update' : 'create'},
+      );
+    } catch (e) {
+      await _showErrorDialog(_formatErrorMessage(e));
+      return;
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -734,8 +711,8 @@ class _CarFormViewState extends State<CarFormView> {
     carName: _carNameController.text.trim(),
     description: _conditionDescriptionController.text.trim(),
     location: _locationController.text.trim(),
-    latitude: _selectedLatitude!.toString(),
-    longitude: _selectedLongitude!.toString(),
+    latitude: _selectedLatitude?.toString(),
+    longitude: _selectedLongitude?.toString(),
   );
 
   void _clearForm() {
@@ -748,5 +725,31 @@ class _CarFormViewState extends State<CarFormView> {
     _selectedImage = null;
     _selectedLatitude = null;
     _selectedLongitude = null;
+  }
+
+  Future<void> _showErrorDialog(String message) async {
+    if (!mounted) return;
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('ERROR'.tr),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('OK'.tr),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatErrorMessage(Object error) {
+    final message = error.toString();
+    const prefix = 'Exception: ';
+    if (message.startsWith(prefix)) {
+      return message.substring(prefix.length);
+    }
+    return message;
   }
 }

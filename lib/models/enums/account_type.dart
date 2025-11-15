@@ -1,1 +1,1 @@
-enum AccountType { client, supervisor, manager }
+enum AccountType { supervisor, manager, client }

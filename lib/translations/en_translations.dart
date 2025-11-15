@@ -79,6 +79,11 @@ class EnTranslations {
         'No internet connection. Please check your connection and try again.',
     'TRY_AGAIN': 'Try Again',
     'LOCATION_NOT_AVAILABLE': 'Location not available',
+    'COPY_LOCATION': 'Copy Location',
+    'LOCATION_COPIED': 'Location copied to clipboard',
+    'CAR.CHASSIS_NUMBER_ALREADY_EXISTS': 'Chassis number already exists',
+    'CAR.PLATE_NUMBER_ALREADY_EXISTS': 'Plate number already exists',
+    'VALIDATION_ERRORS': 'Validation errors occurred',
     'UNABLE_TO_OPEN_WHATSAPP':
         'Unable to open WhatsApp. Please make sure WhatsApp is installed.',
     'SHARE_LOCATION': 'Share Location',
@@ -101,6 +106,8 @@ class EnTranslations {
     'LAST_KNOWN_LOCATION': 'Last Known Location',
     'CONTACT_OWNER_DIRECTLY': 'Contact Owner Directly',
     'OWNER_CONTACT_INFO': 'Owner Contact Information',
+    'UPDATED_BY': 'Updated By',
+    'UPLOAD_BY': 'Uploaded By',
     'CAR_REPORTED_MISSING': 'Car Reported Missing',
     'REPORT_DATE': 'Report Date',
     'REWARD_AMOUNT': 'Reward Amount',
@@ -153,6 +160,35 @@ class EnTranslations {
     'VOLUNTEER_ICON': 'Volunteer',
     'MATCH_ICON': 'Match',
 
+    // User Management
+    'MANAGE_USERS': 'Manage Users',
+    'USERS_TITLE': 'Users',
+    'USER_DETAILS_TITLE': 'User Details',
+    'TOTAL_USERS_LABEL': 'Total users: @count',
+    'NO_USERS_FOUND': 'No users found',
+    'FAILED_TO_LOAD_USERS': 'Failed to load users',
+    'ACCOUNT_CREATED_AT': 'Created At',
+    'ACCOUNT_UPDATED_AT': 'Updated At',
+    'UPDATE_USER_TITLE': 'Update User',
+    'SAVE_CHANGES': 'Save Changes',
+    'USER_UPDATE_SUCCESS': 'User updated successfully',
+    'USER_UPDATE_ERROR': 'Failed to update user',
+    'SELECT_STATUS': 'Select status',
+    'SELECT_ACCOUNT_TYPE': 'Select account type',
+    'USER_CARS_COUNT': '@count cars uploaded',
+    'INVALID_EMAIL': 'Please enter a valid email address',
+    'USER_STATUS_ACTIVE': 'Active',
+    'USER_STATUS_INACTIVE': 'Inactive',
+    'USER_STATUS_UNACTIVE': 'Inactive',
+    'USER_STATUS_PENDING': 'Pending',
+    'USER_ACCOUNT_CLIENT': 'Client',
+    'USER_ACCOUNT_SUPERVISOR': 'Supervisor',
+    'USER_ACCOUNT_MANAGER': 'Manager',
+    'ACCOUNT_INACTIVE_TITLE': 'Account Inactive',
+    'ACCOUNT_INACTIVE_MESSAGE':
+        'Your account is currently @status. Please contact support to activate it.',
+    'OK': 'OK',
+
     // Menu Items
     'MY_ACCOUNT': 'My Account',
     'MY_REQUEST': 'My Request',
@@ -175,6 +211,9 @@ class EnTranslations {
     'LOGIN_REQUIRED_MESSAGE':
         'You need to login to enable uploading lost cars and receiving notifications when they are found',
     'LOGIN': 'Login',
+
+    'AUTH.USER_INACTIVE': 'User Inactive',
+    'AUTH.USER_PENDING': 'User Pending',
 
     // Account Page
     'NAME': 'Name',

@@ -80,6 +80,11 @@ class ArTranslations {
         'لا يوجد اتصال بالإنترنت. يرجى التحقق من اتصالك والمحاولة مرة أخرى.',
     'TRY_AGAIN': 'إعادة المحاولة',
     'LOCATION_NOT_AVAILABLE': 'الموقع غير متاح',
+    'COPY_LOCATION': 'نسخ الموقع',
+    'LOCATION_COPIED': 'تم نسخ الموقع إلى الحافظة',
+    'CAR.CHASSIS_NUMBER_ALREADY_EXISTS': 'رقم الهيكل مستخدم مسبقاً',
+    'CAR.PLATE_NUMBER_ALREADY_EXISTS': 'رقم اللوحة مستخدم مسبقاً',
+    'VALIDATION_ERRORS': 'أخطاء تحقق من البيانات',
     'UNABLE_TO_OPEN_WHATSAPP':
         'لا يمكن فتح واتساب. يرجى التأكد من تثبيت واتساب.',
     'SHARE_LOCATION': 'مشاركة الموقع',
@@ -102,6 +107,8 @@ class ArTranslations {
     'LAST_KNOWN_LOCATION': 'آخر موقع معروف',
     'CONTACT_OWNER_DIRECTLY': 'التواصل مع المالك مباشرة',
     'OWNER_CONTACT_INFO': 'معلومات تواصل المالك',
+    'UPDATED_BY': 'تم التحديث بواسطة',
+    'UPLOAD_BY': 'تم الرفع بواسطة',
     'CAR_REPORTED_MISSING': 'تم الإبلاغ عن فقدان السيارة',
     'REPORT_DATE': 'تاريخ الإبلاغ',
     'REWARD_AMOUNT': 'مبلغ المكافأة',
@@ -154,6 +161,35 @@ class ArTranslations {
     'VOLUNTEER_ICON': 'متطوع',
     'MATCH_ICON': 'تطابق',
 
+    // User Management
+    'MANAGE_USERS': 'إدارة المستخدمين',
+    'USERS_TITLE': 'المستخدمون',
+    'USER_DETAILS_TITLE': 'تفاصيل المستخدم',
+    'TOTAL_USERS_LABEL': 'إجمالي المستخدمين: @count',
+    'NO_USERS_FOUND': 'لا يوجد مستخدمون',
+    'FAILED_TO_LOAD_USERS': 'فشل في تحميل المستخدمين',
+    'ACCOUNT_CREATED_AT': 'تاريخ الإنشاء',
+    'ACCOUNT_UPDATED_AT': 'تاريخ التحديث',
+    'UPDATE_USER_TITLE': 'تحديث المستخدم',
+    'SAVE_CHANGES': 'حفظ التغييرات',
+    'USER_UPDATE_SUCCESS': 'تم تحديث المستخدم بنجاح',
+    'USER_UPDATE_ERROR': 'فشل تحديث المستخدم',
+    'SELECT_STATUS': 'اختر الحالة',
+    'SELECT_ACCOUNT_TYPE': 'اختر نوع الحساب',
+    'USER_CARS_COUNT': 'عدد السيارات: @count',
+    'INVALID_EMAIL': 'يرجى إدخال بريد إلكتروني صالح',
+    'USER_STATUS_ACTIVE': 'نشط',
+    'USER_STATUS_INACTIVE': 'غير نشط',
+    'USER_STATUS_UNACTIVE': 'غير نشط',
+    'USER_STATUS_PENDING': 'قيد الانتظار',
+    'USER_ACCOUNT_CLIENT': 'عميل',
+    'USER_ACCOUNT_SUPERVISOR': 'مشرف',
+    'USER_ACCOUNT_MANAGER': 'مدير',
+    'ACCOUNT_INACTIVE_TITLE': 'الحساب غير مفعل',
+    'ACCOUNT_INACTIVE_MESSAGE':
+        'حسابك حالياً @status. يرجى التواصل مع الدعم لتفعيله.',
+    'OK': 'حسناً',
+
     // Menu Items
     'MY_ACCOUNT': 'حسابي',
     'MY_REQUEST': 'طلباتي',
@@ -176,6 +212,9 @@ class ArTranslations {
     'LOGIN_REQUIRED_MESSAGE':
         'يجب عليك تسجيل الدخول لتمكين رفع سيارات مفقودة والحصول على إشعارات عندما تم العثور عليها',
     'LOGIN': 'تسجيل الدخول',
+
+    'AUTH.USER_UNACTIVE': 'الحساب غير مفعل',
+    'AUTH.USER_PENDING': 'الحساب قيد التحقق',
 
     // Account Page
     'NAME': 'الاسم',

@@ -6,9 +6,9 @@ import 'package:legate_my_car/views/car_list_view.dart';
 import 'package:legate_my_car/views/login_view.dart';
 import 'package:legate_my_car/views/launcher_view.dart';
 import '../services/auth_service.dart';
+import '../services/local_preferences_service.dart';
 import '../utils/connection_helper.dart';
 import '../config/app_flavor.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class IntroView extends StatefulWidget {
   const IntroView({super.key});
@@ -31,8 +31,7 @@ class _IntroViewState extends State<IntroView> {
   /// Check if launcher screen should be shown
   Future<void> _checkLauncherStatus() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final hasSeenLauncher = prefs.getBool('has_seen_launcher') ?? false;
+      final hasSeenLauncher = await LocalPreferencesService.hasSeenLauncher();
 
       if (!hasSeenLauncher) {
         // Show launcher screen for first-time users
@@ -53,8 +52,7 @@ class _IntroViewState extends State<IntroView> {
   /// Mark launcher as seen and proceed with app initialization
   Future<void> _onLauncherComplete() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('has_seen_launcher', true);
+      await LocalPreferencesService.setHasSeenLauncher(true);
     } catch (e) {
       // Continue even if saving fails
     }
