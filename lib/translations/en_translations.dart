@@ -108,6 +108,7 @@ class EnTranslations {
     'OWNER_CONTACT_INFO': 'Owner Contact Information',
     'UPDATED_BY': 'Updated By',
     'UPLOAD_BY': 'Uploaded By',
+    'UPLOADED_DATA': 'Uploaded Date',
     'CAR_REPORTED_MISSING': 'Car Reported Missing',
     'REPORT_DATE': 'Report Date',
     'REWARD_AMOUNT': 'Reward Amount',

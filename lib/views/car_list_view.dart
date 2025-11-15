@@ -127,9 +127,17 @@ class _CarListViewState extends State<CarListView> {
         ),
       ),
       floatingActionButton: AppFlavorConfig.isManagers
-          ? FloatingActionButton(
+          ? FloatingActionButton.extended(
               backgroundColor: Color(0xFF009A49),
-              child: Icon(Icons.add, color: Colors.white),
+              label: Text(
+                'ADD_CAR'.tr,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              icon: Icon(Icons.add, color: Colors.white, size: 24),
               onPressed: () {
                 Navigator.push(
                   context,
@@ -212,12 +220,7 @@ class _CarListViewState extends State<CarListView> {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (context) => CarSingleView(
-              car: vehicle,
-              isManagerRoll: viewModel.isManagerRoll,
-            ),
-          ),
+          MaterialPageRoute(builder: (context) => CarSingleView(car: vehicle)),
         ).then((result) {
           // Handle result from CarSingleView (when car is edited there)
           if (result != null && result is Map) {
@@ -230,10 +233,7 @@ class _CarListViewState extends State<CarListView> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => CarSingleView(
-                      car: car,
-                      isManagerRoll: viewModel.isManagerRoll,
-                    ),
+                    builder: (context) => CarSingleView(car: car),
                   ),
                 );
               } else if (action == 'create') {
@@ -296,20 +296,24 @@ class _CarListViewState extends State<CarListView> {
   }
 
   Widget _buildLazyImage(CarModel vehicle, int index) {
-    return ClipRRect(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-      child: vehicle.imageUrl != null && vehicle.imageUrl!.isNotEmpty
-          ? _LazyCachedImage(imageUrl: vehicle.imageUrl!, index: index)
-          : Container(
-              width: double.infinity,
-              height: double.infinity,
-              color: Colors.grey[800],
-              child: Icon(
-                Icons.car_crash_outlined,
-                color: Colors.grey[400],
-                size: 80,
-              ),
-            ),
+    return Stack(
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+          child: vehicle.imageUrl != null && vehicle.imageUrl!.isNotEmpty
+              ? _LazyCachedImage(imageUrl: vehicle.imageUrl!, index: index)
+              : Container(
+                  width: double.infinity,
+                  height: double.infinity,
+                  color: Colors.grey[800],
+                  child: Icon(
+                    Icons.car_crash_outlined,
+                    color: Colors.grey[400],
+                    size: 80,
+                  ),
+                ),
+        ),
+      ],
     );
   }
 }

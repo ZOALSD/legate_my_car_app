@@ -36,8 +36,12 @@ class UserModel {
           ? AccountType.values.byName(json['accountType'])
           : AccountType.client,
       carsCount: json.containsKey('carsCount') ? json['carsCount'] : 0,
-      createdAt: DateTime.parse(json['createdAt']),
-      updatedAt: DateTime.parse(json['updatedAt']),
+      createdAt: json.containsKey('createdAt') && json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'])
+          : DateTime.fromMillisecondsSinceEpoch(0),
+      updatedAt: json.containsKey('updatedAt') && json['updatedAt'] != null
+          ? DateTime.parse(json['updatedAt'])
+          : DateTime.fromMillisecondsSinceEpoch(0),
       isGuest: json.containsKey('isGuest') ? json['isGuest'] : false,
     );
   }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:legate_my_car/models/enums/lost_status.dart';
 import 'package:legate_my_car/models/lost_car_model.dart';
+import 'package:legate_my_car/utils/getOrCreatedd.dart';
 import '../viewmodels/missing_car_viewmodel.dart';
 import '../theme/app_theme.dart';
 
@@ -382,7 +383,9 @@ class _LostCarFormViewState extends State<LostCarFormView> {
     });
 
     try {
-      final viewModel = Get.find<MissingCarViewModel>();
+      final viewModel = GetOrCreated.getOrPut<MissingCarViewModel>(
+        () => MissingCarViewModel(),
+      );
       bool success;
       if (isUpdateMode) {
         // Update mode

@@ -1,7 +1,4 @@
 import 'package:get/get.dart';
-import 'package:legate_my_car/models/enums/account_type.dart';
-import 'package:legate_my_car/models/user_model.dart';
-import 'package:legate_my_car/services/auth_service.dart';
 import 'package:legate_my_car/services/car_api_service.dart';
 import '../models/car_model.dart';
 
@@ -24,7 +21,6 @@ class CarViewModel extends GetxController {
   final RxInt _totalPages = 1.obs;
   final RxInt _totalCars = 0.obs;
   final RxBool _hasMorePages = false.obs;
-  final RxBool _isManagerRoll = false.obs;
 
   // Getters
   List<CarModel> get cars => _cars;
@@ -36,7 +32,6 @@ class CarViewModel extends GetxController {
   int get totalPages => _totalPages.value;
   int get totalCars => _totalCars.value;
   bool get hasMorePages => _hasMorePages.value;
-  bool get isManagerRoll => _isManagerRoll.value;
 
   @override
   void onInit() {
@@ -45,7 +40,6 @@ class CarViewModel extends GetxController {
   }
 
   Future<void> _initializeApp() async {
-    await setIsManagerRoll();
     await loadCars();
   }
 
@@ -167,11 +161,5 @@ class CarViewModel extends GetxController {
     if (index != -1) {
       _cars[index] = updatedCar;
     }
-  }
-
-  Future<void> setIsManagerRoll() async {
-    final UserModel? user = await AuthService.getCurrentUser();
-    _isManagerRoll.value =
-        user != null && user.accountType == AccountType.manager;
   }
 }

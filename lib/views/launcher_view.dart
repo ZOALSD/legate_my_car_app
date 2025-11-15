@@ -97,7 +97,7 @@ class _LauncherViewState extends State<LauncherView> {
       }
 
       // Check if user is already authenticated
-      final isAuthenticated = await AuthService.hasValidTokenStored();
+      final isAuthenticated = await AuthService.hasTokenStored();
 
       if (isAuthenticated) {
         if (mounted) {

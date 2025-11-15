@@ -1,25 +1,48 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:io';
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get_utils/get_utils.dart';
-import 'package:legate_my_car/config/app_flavor.dart';
+import 'package:legate_my_car/models/enums/account_type.dart';
+import 'package:legate_my_car/utils/constants.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+import 'package:legate_my_car/config/app_flavor.dart';
+
 import '../models/car_model.dart';
 import '../services/auth_service.dart';
-import 'car_form_view.dart';
 import '../theme/app_theme.dart';
+import 'car_form_view.dart';
 
-class CarSingleView extends StatelessWidget {
+class CarSingleView extends StatefulWidget {
   final CarModel car;
-  final bool isManagerRoll;
 
-  const CarSingleView({
-    super.key,
-    required this.car,
-    required this.isManagerRoll,
-  });
+  const CarSingleView({super.key, required this.car});
+
+  @override
+  State<CarSingleView> createState() => _CarSingleViewState();
+}
+
+class _CarSingleViewState extends State<CarSingleView> {
+  bool isManagerRoll = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkManagerRoll();
+  }
+
+  Future<void> _checkManagerRoll() async {
+    final user = await AuthService.getCurrentUser();
+    if (user != null && user.accountType == AccountType.manager) {
+      setState(() {
+        isManagerRoll = true;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -78,9 +101,9 @@ class CarSingleView extends StatelessWidget {
       width: double.infinity,
       child: Stack(
         children: [
-          car.imageUrl != null && car.imageUrl!.isNotEmpty
+          widget.car.imageUrl != null && widget.car.imageUrl!.isNotEmpty
               ? CachedNetworkImage(
-                  imageUrl: car.imageUrl!,
+                  imageUrl: widget.car.imageUrl!,
                   width: double.infinity,
                   height: double.infinity,
                   fit: BoxFit.cover,
@@ -139,15 +162,21 @@ class CarSingleView extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildDetailRow('CAR_NAME'.tr, car.carName ?? " - "),
-          _buildDetailRow('CHASSIS_NUMBER'.tr, car.chassisNumber ?? " - "),
-          _buildDetailRow('PLATE_NUMBER'.tr, car.plateNumber ?? " - "),
+          _buildDetailRow('CAR_NAME'.tr, widget.car.carName ?? " - "),
+          _buildDetailRow(
+            'CHASSIS_NUMBER'.tr,
+            widget.car.chassisNumber ?? " - ",
+          ),
+          _buildDetailRow('PLATE_NUMBER'.tr, widget.car.plateNumber ?? " - "),
           Visibility(
             visible: AppFlavorConfig.isManagers,
             child: _buildLocationRow(),
           ),
-          _buildDetailRow('MODEL_YEAR'.tr, car.modelYear?.toString() ?? " - "),
-          _buildDetailRow('DESCRIPTION'.tr, car.description ?? " - "),
+          _buildDetailRow(
+            'MODEL_YEAR'.tr,
+            widget.car.modelYear?.toString() ?? " - ",
+          ),
+          _buildDetailRow('DESCRIPTION'.tr, widget.car.description ?? " - "),
         ],
       ),
     );
@@ -161,7 +190,7 @@ class CarSingleView extends StatelessWidget {
           return const SizedBox.shrink();
         }
 
-        if (!isManagerRoll || car.user == null) {
+        if (AppFlavorConfig.isClients) {
           return const SizedBox.shrink();
         }
 
@@ -184,12 +213,13 @@ class CarSingleView extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              _buildDetailRow('NAME'.tr, car.user?.name ?? ' - '),
+              _buildDetailRow('NAME'.tr, widget.car.user?.name ?? ' - '),
+              _buildDetailRow('EMAIL'.tr, widget.car.user?.email ?? ' - '),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    "EMAIL".tr,
+                    "UPLOADED_DATA".tr,
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
@@ -197,7 +227,9 @@ class CarSingleView extends StatelessWidget {
                   ),
                   const SizedBox(width: 16),
                   Text(
-                    car.user?.email ?? ' - ',
+                    widget.car.createdAt != null
+                        ? "${widget.car.createdAt!.day.toString().padLeft(2, '0')}-${widget.car.createdAt!.month.toString().padLeft(2, '0')}-${widget.car.createdAt!.year} ${widget.car.createdAt!.hour.toString().padLeft(2, '0')}:${widget.car.createdAt!.minute.toString().padLeft(2, '0')}"
+                        : ' - ',
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
@@ -213,7 +245,7 @@ class CarSingleView extends StatelessWidget {
   }
 
   Widget _buildLocationRow() {
-    final locationText = car.location ?? " - ";
+    final locationText = widget.car.location ?? " - ";
 
     return Column(
       children: [
@@ -262,8 +294,8 @@ class CarSingleView extends StatelessWidget {
   }
 
   String? _getGoogleMapsUrl() {
-    final latitude = car.latitude;
-    final longitude = car.longitude;
+    final latitude = widget.car.latitude;
+    final longitude = widget.car.longitude;
     if (latitude != null && longitude != null) {
       return 'https://www.google.com/maps/search/?api=1&query=$latitude,$longitude';
     }
@@ -404,7 +436,7 @@ class CarSingleView extends StatelessWidget {
 
   Future<void> _contactUs(BuildContext context) async {
     const phoneNumber = '+249900999000'; //'+249900999000';
-    final chassisNumber = car.chassisNumber ?? '';
+    final chassisNumber = widget.car.chassisNumber ?? '';
 
     // Create message with chassis number and request text
     final message = '${'CHASSIS_NUMBER'.tr}: $chassisNumber';
@@ -468,7 +500,7 @@ class CarSingleView extends StatelessWidget {
   void _editCar(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => CarFormView(car: car)),
+      MaterialPageRoute(builder: (context) => CarFormView(car: widget.car)),
     ).then((result) {
       // Pass the result back to list view if car was updated/created
       if (result != null && context.mounted) {

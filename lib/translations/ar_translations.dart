@@ -109,6 +109,7 @@ class ArTranslations {
     'OWNER_CONTACT_INFO': 'معلومات تواصل المالك',
     'UPDATED_BY': 'تم التحديث بواسطة',
     'UPLOAD_BY': 'تم الرفع بواسطة',
+    'UPLOADED_DATA': 'تاريخ الرفع',
     'CAR_REPORTED_MISSING': 'تم الإبلاغ عن فقدان السيارة',
     'REPORT_DATE': 'تاريخ الإبلاغ',
     'REWARD_AMOUNT': 'مبلغ المكافأة',

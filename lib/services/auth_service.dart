@@ -67,7 +67,7 @@ class AuthService {
   }
 
   /// Check if thier token is stored
-  static Future<bool> hasValidTokenStored() async {
+  static Future<bool> hasTokenStored() async {
     final token = await getToken();
 
     if (token == null || token.isEmpty) {

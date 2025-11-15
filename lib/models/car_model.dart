@@ -13,6 +13,7 @@ class CarModel {
   final String? imageUrl;
   final UserModelShortInfo? user;
   final int? userId;
+  final DateTime? createdAt;
 
   CarModel({
     this.id,
@@ -29,6 +30,7 @@ class CarModel {
     this.imageUrl,
     this.user,
     this.userId,
+    this.createdAt,
   });
 
   factory CarModel.fromJson(Map<String, dynamic> json) {
@@ -48,6 +50,9 @@ class CarModel {
       userId: json['userId'] ?? -1, // -1 means not set
       user: json.containsKey('user') && json['user'] != null
           ? UserModelShortInfo.fromJson(json['user'])
+          : null,
+      createdAt: json.containsKey('createdAt') && json['createdAt'] != null
+          ? DateTime.parse(json['createdAt']).toLocal()
           : null,
     );
   }
