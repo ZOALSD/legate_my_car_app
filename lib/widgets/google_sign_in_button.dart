@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:legate_my_car/models/enums/user_status.dart';
+import 'package:legate_my_car/models/login_response.dart';
+import 'package:legate_my_car/views/my_lost_cars_view.dart';
 import '../services/auth_service.dart';
 import '../views/car_list_view.dart';
 import '../utils/translation_helper.dart';
@@ -8,11 +11,19 @@ import '../utils/translation_helper.dart';
 class GoogleSignInButton extends StatefulWidget {
   final bool showAsOutline;
   final EdgeInsets? padding;
+  final bool redirectToMyLostCars;
+  final ValueChanged<LoginResponse>? onResult;
+  final ValueChanged<UserStatus>? onInactiveStatus;
+  final ValueChanged<Object>? onError;
 
   const GoogleSignInButton({
     super.key,
     this.showAsOutline = false,
+    this.redirectToMyLostCars = false,
     this.padding,
+    this.onResult,
+    this.onInactiveStatus,
+    this.onError,
   });
 
   @override
@@ -30,38 +41,48 @@ class _GoogleSignInButtonState extends State<GoogleSignInButton> {
     });
 
     try {
-      final success = await AuthService.signInWithGoogle();
-
-      if (mounted) {
-        if (success) {
-          // Navigate to main screen
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const CarListView()),
-          );
-
-          // Show success message
-          TranslationHelper.showSuccessSnackBar(
-            context,
-            message: 'SIGN_IN_SUCCESS'.tr,
-          );
-        } else {
-          // Show error message
-          TranslationHelper.showErrorSnackBar(
-            context,
-            message: 'GOOGLE_SIGN_IN_ERROR'.tr,
-            title: 'SIGN_IN_ERROR'.tr,
-          );
-        }
+      final response = await AuthService.signInWithGoogle();
+      if (widget.onResult != null) {
+        widget.onResult!(response);
+        return;
       }
-    } catch (e) {
-      if (mounted) {
-        TranslationHelper.showErrorSnackBar(
+
+      if (!mounted) return;
+
+      if (response.success) {
+        if (Get.isDialogOpen == true) {
+          Get.back();
+        }
+
+        if (widget.redirectToMyLostCars) {
+          Get.offAll(() => const MyLostCarsView());
+        } else {
+          Get.offAll(() => const CarListView());
+        }
+
+        UtilsHelper.showSuccessSnackBar(context, message: 'SIGN_IN_SUCCESS'.tr);
+      } else if (response.isInactive) {
+        _showInactiveDialog(response.inactiveStatus!);
+      } else {
+        UtilsHelper.showErrorSnackBar(
           context,
-          message: e.toString(),
+          message: response.message?.tr ?? 'GOOGLE_SIGN_IN_ERROR'.tr,
           title: 'SIGN_IN_ERROR'.tr,
         );
       }
+    } catch (e) {
+      if (widget.onError != null) {
+        widget.onError!(e);
+        return;
+      }
+
+      if (!mounted) return;
+
+      UtilsHelper.showErrorSnackBar(
+        context,
+        message: 'GOOGLE_SIGN_IN_ERROR'.tr,
+        title: 'GOOGLE_SIGN_IN_ERROR'.tr,
+      );
     } finally {
       if (mounted) {
         setState(() {
@@ -132,6 +153,26 @@ class _GoogleSignInButtonState extends State<GoogleSignInButton> {
                 minimumSize: const Size(double.infinity, 48),
               ),
             ),
+    );
+  }
+
+  void _showInactiveDialog(UserStatus status) {
+    if (widget.onInactiveStatus != null) {
+      widget.onInactiveStatus!(status);
+      return;
+    }
+
+    final statusLabel = 'USER_STATUS_${status.name.toUpperCase()}'.tr;
+    Get.dialog(
+      AlertDialog(
+        title: Text('ACCOUNT_INACTIVE_TITLE'.tr),
+        content: Text(
+          'ACCOUNT_INACTIVE_MESSAGE'.trParams({'status': statusLabel}),
+        ),
+        actions: [
+          TextButton(onPressed: () => Get.back(), child: Text('OK'.tr)),
+        ],
+      ),
     );
   }
 }

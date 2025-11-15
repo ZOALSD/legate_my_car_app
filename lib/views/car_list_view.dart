@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:legate_my_car/theme/app_theme.dart';
+import 'package:legate_my_car/views/car_form_view.dart';
 import 'package:legate_my_car/views/car_single_view.dart';
 import 'package:legate_my_car/views/search_Widget.dart';
 import 'package:legate_my_car/views/menu_view.dart';
@@ -125,13 +126,26 @@ class _CarListViewState extends State<CarListView> {
           ],
         ),
       ),
-      // floatingActionButton: FloatingActionButton(
-      //   backgroundColor: Color(0xFF009A49),
-      //   child: Icon(Icons.add, color: Colors.white),
-      //   onPressed: () {
-      //     // Navigate to add car screen
-      //   },
-      // ),
+      floatingActionButton: AppFlavorConfig.isManagers
+          ? FloatingActionButton.extended(
+              backgroundColor: Color(0xFF009A49),
+              label: Text(
+                'ADD_CAR'.tr,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              icon: Icon(Icons.add, color: Colors.white, size: 24),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => CarFormView()),
+                );
+              },
+            )
+          : SizedBox.shrink(),
     );
   }
 
@@ -216,6 +230,12 @@ class _CarListViewState extends State<CarListView> {
             if (car != null && action != null) {
               if (action == 'update') {
                 viewModel.updateCar(car);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CarSingleView(car: car),
+                  ),
+                );
               } else if (action == 'create') {
                 viewModel.addCar(car);
               }
@@ -245,7 +265,7 @@ class _CarListViewState extends State<CarListView> {
                     Directionality(
                       textDirection: ui.TextDirection.ltr,
                       child: Text(
-                        "${vehicle.carNumber ?? " "} - ${vehicle.chassisNumber ?? " - "}",
+                        "${vehicle.number?.toString() ?? " "} - ${vehicle.chassisNumber ?? " - "}",
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
@@ -261,7 +281,7 @@ class _CarListViewState extends State<CarListView> {
                       ),
                     ),
                     Text(
-                      "${vehicle.modelYear ?? " "} - ${vehicle.model ?? ""}",
+                      "${vehicle.modelYear?.toString() ?? " "} - ${vehicle.carName ?? ""}",
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
                     ),
@@ -276,20 +296,24 @@ class _CarListViewState extends State<CarListView> {
   }
 
   Widget _buildLazyImage(CarModel vehicle, int index) {
-    return ClipRRect(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-      child: vehicle.imageUrl != null && vehicle.imageUrl!.isNotEmpty
-          ? _LazyCachedImage(imageUrl: vehicle.imageUrl!, index: index)
-          : Container(
-              width: double.infinity,
-              height: double.infinity,
-              color: Colors.grey[800],
-              child: Icon(
-                Icons.car_crash_outlined,
-                color: Colors.grey[400],
-                size: 80,
-              ),
-            ),
+    return Stack(
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+          child: vehicle.imageUrl != null && vehicle.imageUrl!.isNotEmpty
+              ? _LazyCachedImage(imageUrl: vehicle.imageUrl!, index: index)
+              : Container(
+                  width: double.infinity,
+                  height: double.infinity,
+                  color: Colors.grey[800],
+                  child: Icon(
+                    Icons.car_crash_outlined,
+                    color: Colors.grey[400],
+                    size: 80,
+                  ),
+                ),
+        ),
+      ],
     );
   }
 }

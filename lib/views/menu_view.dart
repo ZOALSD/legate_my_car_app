@@ -2,12 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:legate_my_car/config/app_flavor.dart';
 import 'package:legate_my_car/models/car_model.dart';
+import 'package:legate_my_car/models/enums/account_type.dart';
 import 'package:legate_my_car/services/auth_service.dart';
+import 'package:legate_my_car/views/car_list_view.dart';
 import 'package:legate_my_car/views/login_view.dart';
+import 'package:legate_my_car/views/user_list_view.dart';
 
+import 'about_app_view.dart';
 import 'car_form_view.dart';
 import 'my_account_view.dart';
-import 'about_app_view.dart';
+import 'my_lost_cars_view.dart';
 
 class MenuView extends StatelessWidget {
   final Function(CarModel) onCarAdded;
@@ -36,8 +40,17 @@ class MenuView extends StatelessWidget {
 
     if (!context.mounted) return;
 
+    // Check if user is logged in and not a guest
+    final user = await AuthService.getCurrentUser();
+    final isLoggedIn = user != null && !user.isGuest;
+    final isManagerRoll = user?.accountType == AccountType.manager;
+
+    // Check context again after async operation
+    if (!context.mounted) return;
+
+    final overlayContext = Overlay.of(context);
     final RenderBox? overlay =
-        Overlay.of(context).context.findRenderObject() as RenderBox?;
+        overlayContext.context.findRenderObject() as RenderBox?;
     final RenderBox? buttonBox = context.findRenderObject() as RenderBox?;
 
     if (overlay == null || buttonBox == null || !buttonBox.hasSize) return;
@@ -64,16 +77,17 @@ class MenuView extends StatelessWidget {
             ],
           ),
         ),
-        // PopupMenuItem<String>(
-        //   value: 'my_request',
-        //   child: Row(
-        //     children: [
-        //       const Icon(Icons.request_page, color: Colors.grey),
-        //       const SizedBox(width: 10),
-        //       Text('MY_REQUEST'.tr),
-        //     ],
-        //   ),
-        // ),
+        if (AppFlavorConfig.isClients)
+          PopupMenuItem<String>(
+            value: 'my_lost_cars',
+            child: Row(
+              children: [
+                const Icon(Icons.directions_car, color: Colors.grey),
+                const SizedBox(width: 10),
+                Text('MY_LOST_CARS'.tr),
+              ],
+            ),
+          ),
         if (AppFlavorConfig.isManagers)
           PopupMenuItem<String>(
             value: 'upload_car',
@@ -82,6 +96,17 @@ class MenuView extends StatelessWidget {
                 const Icon(Icons.add_circle, color: Colors.grey),
                 const SizedBox(width: 10),
                 Text('UPLOAD_CAR'.tr),
+              ],
+            ),
+          ),
+        if (AppFlavorConfig.isManagers && isManagerRoll)
+          PopupMenuItem<String>(
+            value: 'manage_users',
+            child: Row(
+              children: [
+                const Icon(Icons.group, color: Colors.grey),
+                const SizedBox(width: 10),
+                Text('MANAGE_USERS'.tr),
               ],
             ),
           ),
@@ -95,16 +120,18 @@ class MenuView extends StatelessWidget {
             ],
           ),
         ),
-        PopupMenuItem<String>(
-          value: 'logout',
-          child: Row(
-            children: [
-              const Icon(Icons.logout, color: Colors.grey),
-              const SizedBox(width: 10),
-              Text('LOGOUT'.tr),
-            ],
+        // Show logout only if user is logged in (not guest)
+        if (isLoggedIn)
+          PopupMenuItem<String>(
+            value: 'logout',
+            child: Row(
+              children: [
+                const Icon(Icons.logout, color: Colors.grey),
+                const SizedBox(width: 10),
+                Text('LOGOUT'.tr),
+              ],
+            ),
           ),
-        ),
       ],
     );
 
@@ -118,8 +145,8 @@ class MenuView extends StatelessWidget {
       case 'my_account':
         Get.to(() => const MyAccountView());
         break;
-      case 'my_request':
-        // Navigate to my request page
+      case 'my_lost_cars':
+        Get.to(() => const MyLostCarsView());
         break;
       case 'upload_car':
         Get.to(() => CarFormView())?.then((result) {
@@ -136,6 +163,9 @@ class MenuView extends StatelessWidget {
             }
           }
         });
+        break;
+      case 'manage_users':
+        Get.to(() => const UserListView());
         break;
       case 'about_app':
         Get.to(() => const AboutAppView());
@@ -168,14 +198,21 @@ class MenuView extends StatelessWidget {
     if (confirmLogout == true) {
       // Perform logout
       await AuthService.logout();
-
-      // Navigate to login view and clear navigation stack
-      if (context.mounted) {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => const LoginView()),
-          (route) => false,
-        );
+      if ((context.mounted)) {
+        if (AppFlavorConfig.isClients) {
+          // Redirect list view
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => CarListView()),
+            (route) => false,
+          );
+        } else {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => const LoginView()),
+            (route) => false,
+          );
+        }
       }
     }
   }

@@ -1,16 +1,48 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:io';
-import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:get/get_utils/get_utils.dart';
-import 'package:url_launcher/url_launcher.dart';
-import '../models/car_model.dart';
-import 'car_form_view.dart';
-import '../theme/app_theme.dart';
 
-class CarSingleView extends StatelessWidget {
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:get/get_utils/get_utils.dart';
+import 'package:legate_my_car/models/enums/account_type.dart';
+import 'package:legate_my_car/utils/constants.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+import 'package:legate_my_car/config/app_flavor.dart';
+
+import '../models/car_model.dart';
+import '../services/auth_service.dart';
+import '../theme/app_theme.dart';
+import 'car_form_view.dart';
+
+class CarSingleView extends StatefulWidget {
   final CarModel car;
 
   const CarSingleView({super.key, required this.car});
+
+  @override
+  State<CarSingleView> createState() => _CarSingleViewState();
+}
+
+class _CarSingleViewState extends State<CarSingleView> {
+  bool isManagerRoll = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkManagerRoll();
+  }
+
+  Future<void> _checkManagerRoll() async {
+    final user = await AuthService.getCurrentUser();
+    if (user != null && user.accountType == AccountType.manager) {
+      setState(() {
+        isManagerRoll = true;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,13 +56,14 @@ class CarSingleView extends StatelessWidget {
               children: [
                 _buildCarImage(),
                 _buildCarDetails(),
+                _buildUserInfoSection(),
                 const SizedBox(height: 100), // Bottom padding for FAB
               ],
             ),
           ),
         ],
       ),
-      floatingActionButton: _buildFloatingActionButton(context),
+      floatingActionButton: _buildFloatingActionButtons(context),
     );
   }
 
@@ -45,16 +78,19 @@ class CarSingleView extends StatelessWidget {
         onPressed: () => Navigator.of(context).pop(),
       ),
       actions: [
-        IconButton(
-          icon: const Icon(Icons.edit, color: AppTheme.primaryColor),
-          onPressed: () => _editCar(context),
-          tooltip: 'EDIT_CAR'.tr,
+        Visibility(
+          visible: AppFlavorConfig.isManagers,
+          child: IconButton(
+            icon: const Icon(Icons.edit, color: AppTheme.primaryColor),
+            onPressed: () => _editCar(context),
+            tooltip: 'EDIT_CAR'.tr,
+          ),
         ),
-        IconButton(
-          icon: const Icon(Icons.share, color: Colors.black),
-          onPressed: () => _shareCar(context),
-          tooltip: 'SHARE_CAR'.tr,
-        ),
+        // IconButton(
+        //   icon: const Icon(Icons.share, color: Colors.black),
+        //   onPressed: () => _shareCar(context),
+        //   tooltip: 'SHARE_CAR'.tr,
+        // ),
       ],
     );
   }
@@ -65,9 +101,9 @@ class CarSingleView extends StatelessWidget {
       width: double.infinity,
       child: Stack(
         children: [
-          car.imageUrl != null && car.imageUrl!.isNotEmpty
+          widget.car.imageUrl != null && widget.car.imageUrl!.isNotEmpty
               ? CachedNetworkImage(
-                  imageUrl: car.imageUrl!,
+                  imageUrl: widget.car.imageUrl!,
                   width: double.infinity,
                   height: double.infinity,
                   fit: BoxFit.cover,
@@ -126,15 +162,170 @@ class CarSingleView extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildDetailRow('CHASSIS_NUMBER'.tr, car.chassisNumber ?? " - "),
-          _buildDetailRow('PLATE_NUMBER'.tr, car.plateNumber ?? " - "),
-          _buildDetailRow('LOCATION'.tr, car.location ?? " - "),
-          _buildDetailRow('BRAND'.tr, car.modelYear ?? " - "),
-          _buildDetailRow('MODEL'.tr, car.model ?? " - "),
-          _buildDetailRow('DESCRIPTION'.tr, car.description ?? " - "),
+          _buildDetailRow('CAR_NAME'.tr, widget.car.carName ?? " - "),
+          _buildDetailRow(
+            'CHASSIS_NUMBER'.tr,
+            widget.car.chassisNumber ?? " - ",
+          ),
+          _buildDetailRow('PLATE_NUMBER'.tr, widget.car.plateNumber ?? " - "),
+          Visibility(
+            visible: AppFlavorConfig.isManagers,
+            child: _buildLocationRow(),
+          ),
+          _buildDetailRow(
+            'MODEL_YEAR'.tr,
+            widget.car.modelYear?.toString() ?? " - ",
+          ),
+          _buildDetailRow('DESCRIPTION'.tr, widget.car.description ?? " - "),
         ],
       ),
     );
+  }
+
+  Widget _buildUserInfoSection() {
+    return FutureBuilder(
+      future: AuthService.getCurrentUser(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const SizedBox.shrink();
+        }
+
+        if (AppFlavorConfig.isClients) {
+          return const SizedBox.shrink();
+        }
+
+        return Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'UPLOAD_BY'.tr,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.primaryColor,
+                ),
+              ),
+              const SizedBox(height: 16),
+              _buildDetailRow('NAME'.tr, widget.car.user?.name ?? ' - '),
+              _buildDetailRow('EMAIL'.tr, widget.car.user?.email ?? ' - '),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "UPLOADED_DATA".tr,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Text(
+                    widget.car.createdAt != null
+                        ? "${widget.car.createdAt!.day.toString().padLeft(2, '0')}-${widget.car.createdAt!.month.toString().padLeft(2, '0')}-${widget.car.createdAt!.year} ${widget.car.createdAt!.hour.toString().padLeft(2, '0')}:${widget.car.createdAt!.minute.toString().padLeft(2, '0')}"
+                        : ' - ',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildLocationRow() {
+    final locationText = widget.car.location ?? " - ";
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Flexible(
+                flex: 3,
+                child: Text(
+                  'LOCATION'.tr,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black87,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Flexible(
+                flex: 7,
+                child: Text(
+                  locationText,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.right,
+                  softWrap: true,
+                  overflow: TextOverflow.visible,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Column(
+          children: [
+            Divider(color: Colors.grey.withValues(alpha: 0.5), thickness: .5),
+            const SizedBox(height: 10),
+          ],
+        ),
+      ],
+    );
+  }
+
+  String? _getGoogleMapsUrl() {
+    final latitude = widget.car.latitude;
+    final longitude = widget.car.longitude;
+    if (latitude != null && longitude != null) {
+      return 'https://www.google.com/maps/search/?api=1&query=$latitude,$longitude';
+    }
+    return null;
+  }
+
+  Future<void> _copyLocation(BuildContext context) async {
+    final googleMapsUrl = _getGoogleMapsUrl();
+    if (googleMapsUrl != null) {
+      await Clipboard.setData(ClipboardData(text: googleMapsUrl));
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('LOCATION_COPIED'.tr),
+            backgroundColor: AppTheme.secondaryColor,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } else {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('LOCATION_NOT_AVAILABLE'.tr),
+            backgroundColor: AppTheme.errorColor,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
   }
 
   Widget _buildDetailRow(String label, String value) {
@@ -187,25 +378,129 @@ class CarSingleView extends StatelessWidget {
     );
   }
 
-  Widget _buildFloatingActionButton(BuildContext context) {
-    return FloatingActionButton.extended(
-      onPressed: () => _shareLocation(context),
-      icon: const Icon(Icons.location_on, color: Colors.white),
-      label: Text(
-        "SHARE_LOCATION".tr,
-        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-      ),
-    );
+  Widget _buildFloatingActionButtons(BuildContext context) {
+    if (!isManagerRoll && AppFlavorConfig.isManagers) {
+      return const SizedBox.shrink();
+    }
+
+    if (AppFlavorConfig.isManagers) {
+      // Show both share and copy buttons for managers
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FloatingActionButton.extended(
+            label: Text('COPY_LOCATION'.tr),
+            heroTag: "copy_location",
+            onPressed: () => _copyLocation(context),
+            backgroundColor: AppTheme.primaryColor,
+            icon: const Icon(Icons.copy, color: Colors.white),
+            tooltip: 'COPY_LOCATION'.tr,
+          ),
+          const SizedBox(width: 16),
+          FloatingActionButton.extended(
+            heroTag: "share_location",
+            onPressed: () => _shareLocation(context),
+            backgroundColor: AppTheme.primaryColor,
+            icon: const Icon(Icons.location_on, color: Colors.white),
+            label: Text(
+              "SHARE_LOCATION".tr,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      );
+    } else {
+      // Show contact button for clients
+      return FloatingActionButton.extended(
+        heroTag: "contact_us",
+        onPressed: () => _contactUs(context),
+        backgroundColor: AppTheme.primaryColor,
+        icon: SvgPicture.asset(
+          'assets/images/whatsapp.svg',
+          width: 30,
+          height: 30,
+        ),
+        label: Text(
+          "CONTACT_US".tr,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      );
+    }
   }
 
-  void _shareCar(BuildContext context) {
-    // TODO: Implement share functionality
+  Future<void> _contactUs(BuildContext context) async {
+    const phoneNumber = '+249900999000'; //'+249900999000';
+    final chassisNumber = widget.car.chassisNumber ?? '';
+
+    // Create message with chassis number and request text
+    final message = '${'CHASSIS_NUMBER'.tr}: $chassisNumber';
+    final encodedMessage = Uri.encodeComponent(message);
+
+    // Use platform-specific WhatsApp URL schemes
+    String whatsappUrl;
+    if (Platform.isIOS) {
+      // iOS WhatsApp URL scheme: whatsapp://send?phone=PHONE&text=MESSAGE
+      whatsappUrl = 'whatsapp://send?phone=$phoneNumber&text=$encodedMessage';
+    } else if (Platform.isAndroid) {
+      // Android WhatsApp URL scheme: https://wa.me/PHONE?text=MESSAGE
+      // Remove + from phone number for wa.me
+      final cleanPhone = phoneNumber.replaceAll('+', '');
+      whatsappUrl = 'https://wa.me/$cleanPhone?text=$encodedMessage';
+    } else {
+      // Fallback to web version
+      final cleanPhone = phoneNumber.replaceAll('+', '');
+      whatsappUrl = 'https://wa.me/$cleanPhone?text=$encodedMessage';
+    }
+
+    try {
+      final uri = Uri.parse(whatsappUrl);
+      bool launched = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
+
+      // If direct scheme fails, try web version as fallback
+      if (!launched && (Platform.isIOS || Platform.isAndroid)) {
+        final cleanPhone = phoneNumber.replaceAll('+', '');
+        final webWhatsappUrl = 'https://wa.me/$cleanPhone?text=$encodedMessage';
+        final webUri = Uri.parse(webWhatsappUrl);
+        launched = await launchUrl(
+          webUri,
+          mode: LaunchMode.externalApplication,
+        );
+      }
+
+      if (!launched && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('UNABLE_TO_OPEN_WHATSAPP'.tr),
+            backgroundColor: AppTheme.errorColor,
+          ),
+        );
+      }
+    } catch (e) {
+      // Handle platform exception or other errors
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('UNABLE_TO_OPEN_WHATSAPP'.tr),
+            backgroundColor: AppTheme.errorColor,
+          ),
+        );
+      }
+    }
   }
 
   void _editCar(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => CarFormView(car: car)),
+      MaterialPageRoute(builder: (context) => CarFormView(car: widget.car)),
     ).then((result) {
       // Pass the result back to list view if car was updated/created
       if (result != null && context.mounted) {
@@ -215,14 +510,8 @@ class CarSingleView extends StatelessWidget {
   }
 
   Future<void> _shareLocation(BuildContext context) async {
-    // use latitude and longitude to share location
-    final latitude = car.latitude;
-    final longitude = car.longitude;
-    if (latitude != null && longitude != null) {
-      // Create Google Maps URL
-      final googleMapsUrl =
-          'https://www.google.com/maps/search/?api=1&query=$latitude,$longitude';
-
+    final googleMapsUrl = _getGoogleMapsUrl();
+    if (googleMapsUrl != null) {
       // Create WhatsApp share URL with the location link
       final message = Uri.encodeComponent('Location: $googleMapsUrl');
 

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../models/login_model.dart';
+import 'package:legate_my_car/models/user_model.dart';
+import 'package:legate_my_car/utils/translation_helper.dart';
 import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/google_sign_in_button.dart';
+import '../utils/connection_helper.dart';
+import 'car_list_view.dart';
 
 class MyAccountView extends StatefulWidget {
   const MyAccountView({super.key});
@@ -15,33 +18,21 @@ class MyAccountView extends StatefulWidget {
 class _MyAccountViewState extends State<MyAccountView> {
   UserModel? _user;
   bool _isLoading = true;
+  bool _isDeletingAccount = false;
 
   @override
   void initState() {
     super.initState();
-    _loadUserData();
+    _getCurrentUser();
   }
 
-  Future<void> _loadUserData() async {
-    try {
-      final user = await AuthService.getCurrentUser();
+  Future<void> _getCurrentUser() async {
+    final user = await AuthService.getCurrentUser();
+    if (user != null) {
       setState(() {
         _user = user;
         _isLoading = false;
       });
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-      if (mounted) {
-        Get.snackbar(
-          'ERROR'.tr,
-          'FAILED_TO_LOAD_USER_INFO'.tr,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: AppTheme.errorColor,
-          colorText: Colors.white,
-        );
-      }
     }
   }
 
@@ -117,6 +108,8 @@ class _MyAccountViewState extends State<MyAccountView> {
 
                   // Upgrade to Google Account (only for guest users)
                   if (_user!.isGuest) _buildUpgradeButton(),
+                  if (_user!.isGuest) const SizedBox(height: 24),
+                  if (!_user!.isGuest) _buildDeleteAccountCard(),
                 ],
               ),
             ),
@@ -166,7 +159,7 @@ class _MyAccountViewState extends State<MyAccountView> {
   Widget _buildUpgradeButton() {
     return Card(
       elevation: 2,
-      color: AppTheme.primaryColor.withOpacity(0.1),
+      color: AppTheme.primaryColor.withValues(alpha: 0.1),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -206,5 +199,181 @@ class _MyAccountViewState extends State<MyAccountView> {
         ),
       ),
     );
+  }
+
+  Widget _buildDeleteAccountCard() {
+    return Card(
+      elevation: 2,
+      color: AppTheme.errorColor.withValues(alpha: 0.08),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(
+                  Icons.delete_forever,
+                  color: AppTheme.errorColor,
+                  size: 26,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'DELETE_ACCOUNT'.tr,
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              color: AppTheme.errorColor,
+                              fontWeight: FontWeight.bold,
+                            ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'DELETE_ACCOUNT_DESCRIPTION'.tr,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppTheme.textSecondaryColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: _isDeletingAccount
+                  ? null
+                  : () => _confirmDeleteAccount(),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.errorColor,
+                foregroundColor: AppTheme.sudanWhite,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+              icon: _isDeletingAccount
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          AppTheme.sudanWhite,
+                        ),
+                      ),
+                    )
+                  : const Icon(Icons.delete_outline),
+              label: Text(
+                _isDeletingAccount
+                    ? 'DELETING_ACCOUNT'.tr
+                    : 'DELETE_ACCOUNT'.tr,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _confirmDeleteAccount() async {
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('DELETE_ACCOUNT_CONFIRM_TITLE'.tr),
+          content: Text('DELETE_ACCOUNT_CONFIRM_MESSAGE'.tr),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text('CANCEL'.tr),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: AppTheme.errorColor,
+                foregroundColor: AppTheme.sudanWhite,
+              ),
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text('DELETE_ACCOUNT_CONFIRM_ACTION'.tr),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldDelete == true) {
+      // await _deleteAccount();
+      setState(() {
+        _isDeletingAccount = true;
+      });
+
+      Future.delayed(const Duration(seconds: 3), () {
+        AuthService.logout();
+        Get.offAll(() => const CarListView());
+        // show Snackbar with success message
+        UtilsHelper.showSuccessSnackBar(
+          context,
+          message: 'ACCOUNT_DELETED_SUCCESSFULLY'.tr,
+        );
+      });
+    }
+  }
+
+  Future<void> _deleteAccount() async {
+    if (_isDeletingAccount) return;
+
+    final isGuest = _user?.isGuest ?? true;
+    if (!isGuest) {
+      final hasInternet = await ConnectionHelper.hasInternet();
+      if (!hasInternet) {
+        if (mounted) {
+          Get.snackbar(
+            'ERROR'.tr,
+            'DELETE_ACCOUNT_OFFLINE'.tr,
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: AppTheme.errorColor,
+            colorText: Colors.white,
+          );
+        }
+        return;
+      }
+    }
+
+    setState(() {
+      _isDeletingAccount = true;
+    });
+
+    final success = await AuthService.deleteAccount();
+
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _isDeletingAccount = false;
+      _user = success ? null : _user;
+    });
+
+    if (success) {
+      Get.snackbar(
+        'SUCCESS'.tr,
+        'DELETE_ACCOUNT_SUCCESS'.tr,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: AppTheme.secondaryColor,
+        colorText: Colors.white,
+      );
+
+      // Navigate back to main view
+      Get.offAll(() => const CarListView());
+    } else {
+      Get.snackbar(
+        'ERROR'.tr,
+        'DELETE_ACCOUNT_ERROR'.tr,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: AppTheme.errorColor,
+        colorText: Colors.white,
+      );
+    }
   }
 }

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:get/get_utils/get_utils.dart';
@@ -10,7 +11,7 @@ class CarApiService {
   // Get all cars with pagination
   static final dio = DioService.instance;
 
-  static Future<CarsApiResponse> getAllCars({
+  static Future<ListResponseModel<CarModel>> getAllCars({
     int page = 1,
     int perPage = 10,
     String? chassisNumber,
@@ -30,7 +31,7 @@ class CarApiService {
       };
 
       if (chassisNumber != null && chassisNumber.isNotEmpty) {
-        queryParams['chassis_number'] = chassisNumber;
+        queryParams['query'] = chassisNumber;
       }
 
       final endpoint = '/cars';
@@ -40,9 +41,14 @@ class CarApiService {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonData = response.data;
-        return CarsApiResponse.fromJson(jsonData);
+        final listResponseModel = ListResponseModel.fromJson(
+          jsonData,
+          (data) => CarModel.fromJson(data),
+        );
+
+        return listResponseModel;
       } else {
-        throw Exception('Failed to load cars: ${response.statusCode}');
+        return ListResponseModel(success: false, data: [], pagination: null);
       }
     } on DioException catch (e) {
       // Handle specific DioException types
@@ -77,12 +83,8 @@ class CarApiService {
       final response = await dio.get('/cars/$id');
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> jsonData = response.data;
-        final apiResponse = ApiResponseModel.fromJson(
-          jsonData,
-          (data) => CarModel.fromJson(data),
-        );
-        return apiResponse.data;
+        final data = jsonDecode(response.data);
+        return CarModel.fromJson(data['data']);
       } else {
         throw Exception('Failed to load car: ${response.statusCode}');
       }
@@ -124,12 +126,9 @@ class CarApiService {
       final response = await dio.post('/cars', data: formData);
 
       if (response.statusCode == 201) {
-        final Map<String, dynamic> jsonData = response.data;
-        final apiResponse = ApiResponseModel.fromJson(
-          jsonData,
-          (data) => CarModel.fromJson(data),
-        );
-        return apiResponse.data;
+        return CarModel.fromJson(response.data['data']);
+      } else if (response.statusCode == 422) {
+        throw Exception(_extractValidationMessage(response.data));
       } else {
         throw Exception('Failed to create car: ${response.statusCode}');
       }
@@ -150,7 +149,7 @@ class CarApiService {
         throw Exception('Network error: ${e.message ?? "Unknown error"}');
       }
     } catch (e) {
-      throw Exception('Error creating car: $e');
+      throw Exception(_formatErrorMessage(e));
     }
   }
 
@@ -172,12 +171,10 @@ class CarApiService {
       final response = await dio.post('/cars/${car.id}/update', data: formData);
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> jsonData = response.data;
-        final apiResponse = ApiResponseModel.fromJson(
-          jsonData,
-          (data) => CarModel.fromJson(data),
-        );
-        return apiResponse.data;
+        // final data = jsonDecode(response.data);
+        return CarModel.fromJson(response.data['data']);
+      } else if (response.statusCode == 422) {
+        throw Exception(_extractValidationMessage(response.data));
       } else {
         throw Exception('Failed to update car: ${response.statusCode}');
       }
@@ -197,7 +194,91 @@ class CarApiService {
         throw Exception('Network error: ${e.message ?? "Unknown error"}');
       }
     } catch (e) {
-      throw Exception('Error updating car: $e');
+      throw Exception(_formatErrorMessage(e));
     }
+  }
+
+  static String _formatErrorMessage(Object error) {
+    final message = error.toString();
+    const prefix = 'Exception: ';
+    if (message.startsWith(prefix)) {
+      return message.substring(prefix.length);
+    }
+    return message;
+  }
+
+  static String _extractValidationMessage(dynamic rawPayload) {
+    dynamic payload = rawPayload;
+
+    if (payload is String) {
+      try {
+        payload = jsonDecode(payload);
+      } catch (_) {}
+    }
+
+    final messages = <String>[];
+
+    void addMessage(String? code) {
+      if (code == null || code.isEmpty) return;
+      final translated = code.tr;
+      messages.add(translated.isNotEmpty ? translated : code);
+    }
+
+    Map<String, dynamic>? dataMap;
+    if (payload is Map<String, dynamic>) {
+      dataMap = payload;
+    }
+
+    dynamic errors;
+    if (dataMap != null) {
+      errors = dataMap['errors'] ?? dataMap['data'];
+      if (errors is Map<String, dynamic>) {
+        final nestedErrors = errors['errors'];
+        if (nestedErrors != null) {
+          errors = nestedErrors;
+        }
+      }
+    }
+
+    void parseErrors(dynamic err) {
+      if (err == null) return;
+      if (err is List) {
+        for (final entry in err) {
+          if (entry is List || entry is Map) {
+            parseErrors(entry);
+          } else {
+            addMessage(entry?.toString());
+          }
+        }
+      } else if (err is Map<String, dynamic>) {
+        err.forEach((key, value) {
+          if (value is List) {
+            for (final nested in value) {
+              addMessage('$key: ${nested.toString()}');
+            }
+          } else {
+            addMessage('$key: ${value.toString()}');
+          }
+        });
+      } else {
+        addMessage(err.toString());
+      }
+    }
+
+    parseErrors(dataMap?['errors']);
+
+    if (messages.isEmpty) {
+      parseErrors(dataMap?['data']?['errors']);
+    }
+
+    if (messages.isEmpty && dataMap?['message'] != null) {
+      addMessage(dataMap!['message'].toString());
+    }
+
+    if (messages.isEmpty) {
+      addMessage('VALIDATION_ERRORS');
+    }
+
+    return messages.join('\n');
   }
 }

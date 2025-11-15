@@ -375,8 +375,7 @@ class _LocationPickerViewState extends State<LocationPickerView> {
                               if (!mounted) return;
 
                               // Only show error for critical failures, not individual tile failures
-                              if (error != null &&
-                                  error.toString().contains('network')) {
+                              if (error.toString().contains('network')) {
                                 WidgetsBinding.instance.addPostFrameCallback((
                                   _,
                                 ) {

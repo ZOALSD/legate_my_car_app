@@ -1,5 +1,5 @@
 {
-    "dart.flutterSdkPath": "/Users/apple/FlutterDev/flutter",
+    "dart.flutterSdkPath": "/usr/local/share/flutter",
     "dart.enableSdkFormatter": true,
     "dart.lineLength": 80,
     "dart.insertArgumentPlaceholders": true,

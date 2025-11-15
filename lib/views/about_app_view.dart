@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:legate_my_car/theme/app_theme.dart';
 import 'package:legate_my_car/config/app_flavor.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -107,7 +108,138 @@ class AboutAppView extends StatelessWidget {
                 ),
               ),
             ),
-            SizedBox(height: MediaQuery.of(context).size.height * 0.2),
+            const SizedBox(height: 16),
+            // Developer Information
+            Card(
+              elevation: 2,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.person,
+                          color: AppTheme.primaryColor,
+                          size: 28,
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'DEVELOPED_BY'.tr,
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(
+                                      color: AppTheme.textSecondaryColor,
+                                    ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'AHMED_MOHAMED'.tr,
+                                style: Theme.of(context).textTheme.titleMedium
+                                    ?.copyWith(fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.email,
+                          color: AppTheme.primaryColor,
+                          size: 28,
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'CONTACT_EMAIL'.tr,
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(
+                                      color: AppTheme.textSecondaryColor,
+                                    ),
+                              ),
+                              const SizedBox(height: 4),
+                              InkWell(
+                                onTap: () async {
+                                  final Uri emailUri = Uri(
+                                    scheme: 'mailto',
+                                    path: 'ahmed.moha2med.sd@gmail.com',
+                                  );
+                                  try {
+                                    // Try to launch email client directly
+                                    // Use platformDefault first, fallback to externalApplication if needed
+                                    bool launched = await launchUrl(
+                                      emailUri,
+                                      mode: LaunchMode.platformDefault,
+                                    );
+
+                                    // If platformDefault fails, try externalApplication
+                                    if (!launched) {
+                                      launched = await launchUrl(
+                                        emailUri,
+                                        mode: LaunchMode.externalApplication,
+                                      );
+                                    }
+
+                                    // If launch fails, show email in snackbar
+                                    if (!launched && context.mounted) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            'ahmed.moha2med.sd@gmail.com',
+                                          ),
+                                          backgroundColor:
+                                              AppTheme.primaryColor,
+                                        ),
+                                      );
+                                    }
+                                  } catch (e) {
+                                    // If any error occurs, show email in snackbar
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            'ahmed.moha2med.sd@gmail.com',
+                                          ),
+                                          backgroundColor:
+                                              AppTheme.primaryColor,
+                                        ),
+                                      );
+                                    }
+                                  }
+                                },
+                                child: Text(
+                                  'ahmed.moha2med.sd@gmail.com',
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(
+                                        color: AppTheme.primaryColor,
+                                        decoration: TextDecoration.underline,
+                                      ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(height: MediaQuery.of(context).size.height * 0.1),
 
             // Footer
             Text(

@@ -59,16 +59,26 @@ class CarViewModel extends GetxController {
         chassisNumber: chassisNumber,
       );
 
-      if (append && page > 1) {
-        _cars.addAll(response.cars);
-      } else {
-        _cars.value = response.cars;
+      if (!response.success) {
+        _errorMessage.value = 'Failed to load cars';
+        _cars.value = [];
+        _currentPage.value = 1;
+        _totalPages.value = 1;
+        _totalCars.value = 0;
+        _hasMorePages.value = false;
+        return;
       }
 
-      _currentPage.value = response.pagination.currentPage;
-      _totalPages.value = response.pagination.lastPage;
-      _totalCars.value = response.pagination.total;
-      _hasMorePages.value = response.pagination.hasMorePages;
+      if (append && page > 1) {
+        _cars.addAll(response.data ?? []);
+      } else {
+        _cars.value = response.data ?? [];
+      }
+
+      _currentPage.value = response.pagination?.currentPage ?? 1;
+      _totalPages.value = response.pagination?.lastPage ?? 1;
+      _totalCars.value = response.pagination?.total ?? 0;
+      _hasMorePages.value = response.pagination?.hasMorePages ?? false;
     } catch (e) {
       // Extract error message, removing "Exception: " prefix if present
       String errorMsg = e.toString();
